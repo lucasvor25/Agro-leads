@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http'; // <--- Importe HttpParams
 import { Observable } from 'rxjs';
 import { Lead } from '../models/lead';
-
+import { map } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
@@ -27,5 +27,16 @@ export class LeadService {
 
   create(lead: any): Observable<Lead> {
     return this.http.post<Lead>(this.apiUrl, lead);
+  }
+
+  getLeadById(id: number): Observable<Lead> {
+    return this.http.get<Lead>(`${this.apiUrl}/${id}`);
+  }
+
+  getCitiesMG(): Observable<any[]> {
+    return this.http.get<any[]>('https://servicodados.ibge.gov.br/api/v1/localidades/estados/MG/municipios')
+      .pipe(
+        map(cities => cities.map(c => ({ label: c.nome, value: c.nome }))) // Formata para o Dropdown do PrimeNG
+      );
   }
 }

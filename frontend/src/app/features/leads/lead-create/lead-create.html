@@ -1,3 +1,5 @@
+<p-toast></p-toast>
+
 <p-dialog 
     header="Novo Lead" 
     [(visible)]="visible" 
@@ -10,31 +12,62 @@
     <div class="p-fluid grid formgrid">
         
         <div class="field col-12">
-            <label for="name" class="font-medium text-900">Nome Completo</label>
+            <label for="name" class="font-bold text-900">Nome Completo *</label>
             <input pInputText id="name" [(ngModel)]="newLead.name" placeholder="Ex: João da Silva" />
         </div>
 
         <div class="field col-12 md:col-6">
-            <label for="cpf" class="font-medium text-900">CPF</label>
-            <input pInputText id="cpf" [(ngModel)]="newLead.cpf" placeholder="000.000.000-00" />
+            <label for="cpf" class="font-bold text-900">CPF *</label>
+            <p-inputMask 
+                id="cpf" 
+                mask="999.999.999-99" 
+                [(ngModel)]="newLead.cpf" 
+                placeholder="000.000.000-00"
+                [autoClear]="false">
+            </p-inputMask>
         </div>
+
         <div class="field col-12 md:col-6">
-            <label for="phone" class="font-medium text-900">Telefone</label>
-            <input pInputText id="phone" [(ngModel)]="newLead.phone" placeholder="(00) 00000-0000" />
+            <label for="phone" class="font-bold text-900">Telefone *</label>
+            <p-inputMask 
+                id="phone" 
+                mask="(99) 99999-9999" 
+                [(ngModel)]="newLead.phone" 
+                placeholder="(00) 00000-0000"
+                [autoClear]="false">
+            </p-inputMask>
         </div>
 
         <div class="field col-12">
-            <label for="email" class="font-medium text-900">Email</label>
+            <label for="email" class="font-bold text-900">Email *</label>
             <input pInputText id="email" [(ngModel)]="newLead.email" placeholder="email@exemplo.com" />
         </div>
 
         <div class="field col-12 md:col-6">
-            <label for="city" class="font-medium text-900">Município</label>
-            <input pInputText id="city" [(ngModel)]="newLead.city" placeholder="Ex: Uberlândia" />
-        </div>
+    <label for="city" class="font-bold text-900">Município (MG) *</label>
+    
+    <p-autoComplete 
+        [(ngModel)]="newLead.city" 
+        [suggestions]="filteredCities" 
+        (completeMethod)="filterCity($event)" 
+        field="label" 
+        [forceSelection]="true"
+        [dropdown]="true"
+        placeholder="Digite para buscar..."
+        appendTo="body">
+    </p-autoComplete>
+</div>
+
         <div class="field col-12 md:col-6">
-            <label for="area" class="font-medium text-900">Área (Hectares)</label>
-            <p-inputNumber id="area" [(ngModel)]="newLead.area" suffix=" ha" placeholder="0.00"></p-inputNumber>
+            <label for="area" class="font-bold text-900">Área (Hectares) *</label>
+            <p-inputNumber 
+                id="area" 
+                [(ngModel)]="newLead.area" 
+                suffix=" ha" 
+                placeholder="0.00"
+                mode="decimal" 
+                [minFractionDigits]="2">
+            </p-inputNumber>
         </div>
 
         <div class="field col-12 md:col-6">

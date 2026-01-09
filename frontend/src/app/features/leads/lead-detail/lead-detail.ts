@@ -1,92 +1,83 @@
-import { Component, OnInit, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router'; // Importante para pegar o ID
 import { Lead } from '../../../core/models/lead';
-import * as mapboxgl from 'mapbox-gl';
-import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import { LeadService } from '../../../core/services/lead.service';
 import { PRIMENG_MODULES } from '../../../shared/modules/prime-ng-module';
-import { environment } from 'src/environments/environment';
+import { TimeAgoPipe } from '../../../shared/pipes/time-ago.pipe'; // Se quiser usar o pipe de tempo
+import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
   selector: 'app-lead-detail',
   standalone: true,
-  imports: [CommonModule, ...PRIMENG_MODULES, RouterLink, FormsModule],
+  imports: [
+    CommonModule,
+    ...PRIMENG_MODULES,
+    TimeAgoPipe,
+    SkeletonModule
+  ],
   templateUrl: './lead-detail.html',
   styleUrls: ['./lead-detail.css']
 })
-export class LeadDetailComponent implements OnInit, AfterViewInit, OnDestroy {
-  lead: Lead = {
-    id: 1, name: 'João Carlos Silva', city: 'Uberlândia', phone: '(34) 99999-1234',
-    email: 'joao.silva@email.com', status: 'Em Negociação', area: 450,
-    lastContact: 'há 2 anos', isPriority: true, cpf: '123.456.789-00',
-    propertiesCount: 2, createdAt: '14 de jan de 2024', updatedAt: '19/01/2024',
-    obs: 'Interessado em fertilizantes para soja.'
-  };
+export class LeadDetailComponent implements OnInit {
 
-  // Modal
-  displayModal: boolean = false;
-  newProperty = { nome: '', municipio: '', cultura: '', area: null, obs: '' };
+  lead: Lead | null = null;
+  loading: boolean = true;
 
-  // Mapas
-  mapMain: mapboxgl.Map | undefined;
-  mapModal: mapboxgl.Map | undefined;
-
-  constructor(private route: ActivatedRoute) {
-    (mapboxgl as any).accessToken = environment.mapboxToken;
-  }
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private leadService: LeadService
+  ) { }
 
   ngOnInit() {
-    // Aqui você pegaria o ID da rota: this.route.snapshot.paramMap.get('id');
-  }
+    // 1. Pega o ID da URL (ex: /leads/15)
+    const id = this.route.snapshot.paramMap.get('id');
 
-  ngAfterViewInit() {
-    this.initMainMap();
-  }
-
-  initMainMap() {
-    this.mapMain = new mapboxgl.Map({
-      container: 'detail-map',
-      style: 'mapbox://styles/mapbox/satellite-streets-v12',
-      center: [-48.27, -18.91],
-      zoom: 11
-    });
-    // Adicione marcadores fictícios aqui se quiser
-  }
-
-  showModal() {
-    this.displayModal = true;
-    setTimeout(() => this.initModalMap(), 200);
-  }
-
-  initModalMap() {
-    if (this.mapModal) {
-      this.mapModal.resize();
-      return;
+    if (id) {
+      this.loadLead(Number(id));
     }
-    this.mapModal = new mapboxgl.Map({
-      container: 'modal-map',
-      style: 'mapbox://styles/mapbox/satellite-v9',
-      center: [-48.27, -18.91],
-      zoom: 12
-    });
-
-    const geocoder = new MapboxGeocoder({
-      accessToken: (mapboxgl as any).accessToken,
-      mapboxgl: mapboxgl,
-      placeholder: 'Buscar fazenda...',
-      marker: true
-    });
-    this.mapModal.addControl(geocoder);
   }
 
-  saveProperty() {
-    console.log('Salvando:', this.newProperty);
-    this.displayModal = false;
+  loadLead(id: number) {
+    this.loading = true;
+    this.leadService.getLeadById(id).subscribe({
+      next: (data) => {
+        this.lead = data;
+        this.loading = false;
+        console.log('Detalhes carregados:', data);
+      },
+      error: (err) => {
+        console.error('Erro ao carregar lead:', err);
+        this.loading = false;
+        // Opcional: Redirecionar se não achar
+        // this.router.navigate(['/leads']); 
+      }
+    });
   }
 
-  ngOnDestroy() {
-    this.mapMain?.remove();
-    this.mapModal?.remove();
+  goBack() {
+    this.router.navigate(['/leads']);
+  }
+
+  // Métodos placeholder para os botões
+  editLead() {
+    console.log('Editar', this.lead?.id);
+  }
+
+  deleteLead() {
+    console.log('Excluir', this.lead?.id);
+  }
+
+  // Função auxiliar de cor (igual à da lista)
+  getStatusSeverity(status: string): "success" | "info" | "warning" | "danger" | undefined {
+    switch (status) {
+      case 'Novo': return 'info';
+      case 'Contato Inicial': return 'info';
+      case 'Em Negociação': return 'warning';
+      case 'Convertido': return 'success';
+      case 'Perdido': return 'danger';
+      default: return 'info';
+    }
   }
 }
