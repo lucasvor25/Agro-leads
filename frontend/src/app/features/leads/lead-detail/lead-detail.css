@@ -1,0 +1,6 @@
+/* Ajuste para o Geocoder do Mapbox não quebrar o layout */
+:host ::ng-deep .mapboxgl-ctrl-geocoder {
+    width: 90%;
+    margin: 10px auto;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}

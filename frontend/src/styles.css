@@ -1,0 +1,11 @@
+@import "primeflex/primeflex.css";
+@import "primeng/resources/themes/lara-light-green/theme.css"; /* Tema verde agro */
+@import "primeng/resources/primeng.css";
+@import "primeicons/primeicons.css";
+@import "mapbox-gl/dist/mapbox-gl.css"; /* CSS do Mapa */
+
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc; /* Fundo cinza claro */
+}

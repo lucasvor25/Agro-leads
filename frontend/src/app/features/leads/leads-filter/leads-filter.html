@@ -1,0 +1,45 @@
+<div class="surface-card p-3 border-round shadow-1 mb-4 flex flex-column md:flex-row gap-3 align-items-center">
+  
+  <span class="p-input-icon-left flex-1 w-full">
+    <i class="pi pi-search"></i>
+    <input 
+      type="text" 
+      pInputText 
+      [(ngModel)]="filters.search" 
+      (ngModelChange)="onFilterChange('search')"
+      placeholder="Buscar por nome, cpf ou email..." 
+      class="w-full" 
+    />
+  </span>
+
+  <p-dropdown 
+    [options]="statusOptions" 
+    [(ngModel)]="filters.status" 
+    (onChange)="onFilterChange('status')"
+    placeholder="Todos Status"
+    styleClass="w-full md:w-15rem"
+    optionLabel="label" 
+    optionValue="value">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="cityOptions" 
+    [(ngModel)]="filters.city" 
+    (onChange)="onFilterChange('city')"
+    placeholder="Todos Municípios"
+    styleClass="w-full md:w-15rem"
+    optionLabel="label" 
+    optionValue="value">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="priorityOptions" 
+    [(ngModel)]="filters.priority" 
+    (onChange)="onFilterChange('priority')"
+    placeholder="Prioridade"
+    styleClass="w-full md:w-10rem"
+    optionLabel="label" 
+    optionValue="value">
+  </p-dropdown>
+
+</div>
