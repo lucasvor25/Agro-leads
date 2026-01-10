@@ -1,15 +1,14 @@
 <p-toast></p-toast>
 
 <p-dialog 
-    [header]="isEditMode ? 'Editar Lead' : 'Novo Lead'" 
+    [header]="isEditMode ? 'Editar Lead' : 'Criar Lead'" 
     [(visible)]="visible" 
     [modal]="true" 
     [style]="{width: '50vw'}" 
     [breakpoints]="{'960px': '75vw', '640px': '90vw'}"
     [draggable]="false" 
-    [resizable]="false">
-
-    <div class="p-fluid grid formgrid">
+    [resizable]="false"
+    [focusOnShow]="false"> <div class="p-fluid grid formgrid">
         
         <div class="field col-12">
             <label for="name" class="font-bold text-900">Nome Completo *</label>
@@ -44,19 +43,20 @@
         </div>
 
         <div class="field col-12 md:col-6">
-    <label for="city" class="font-bold text-900">Município (MG) *</label>
-    
-    <p-autoComplete 
-        [(ngModel)]="newLead.city" 
-        [suggestions]="filteredCities" 
-        (completeMethod)="filterCity($event)" 
-        field="label" 
-        [forceSelection]="true"
-        [dropdown]="true"
-        placeholder="Digite para buscar..."
-        appendTo="body">
-    </p-autoComplete>
-</div>
+            <label for="city" class="font-bold text-900">Município (MG) *</label>
+            
+            <p-autoComplete 
+                [(ngModel)]="newLead.city" 
+                [suggestions]="filteredCities" 
+                (completeMethod)="filterCity($event)" 
+                field="label" 
+                [dropdown]="true"
+                [completeOnFocus]="true"
+                placeholder="Selecione ou digite..."
+                [forceSelection]="true"
+                appendTo="body">
+            </p-autoComplete>
+        </div>
 
         <div class="field col-12 md:col-6">
             <label for="area" class="font-bold text-900">Área (Hectares) *</label>

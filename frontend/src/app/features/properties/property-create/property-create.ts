@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient } from '@angular/common/http'; // Necessário para geocodificação
+import { HttpClient } from '@angular/common/http';
 
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
@@ -31,48 +31,11 @@ import { PropertyService } from '../../../core/services/property.service';
   ],
   providers: [MessageService],
   templateUrl: './property-create.html',
-  // Aplica classes ao elemento host do componente para mudar o cursor globalmente
   host: {
     '[class.cursor-draw]': 'selectedMapMode === "draw"',
     '[class.cursor-pin]': 'selectedMapMode === "pin"'
   },
-  styles: [`
-  :host ::ng-deep .p-dialog-content { overflow-y: visible; }
-  #map-create { height: 400px; width: 100%; border-radius: 8px; }
-
-  /* --- MÁGICA VISUAL DO AUTOCOMPLETE --- */
-  
-  /* 1. Garante largura total */
-  :host ::ng-deep .p-autocomplete { width: 100%; }
-  
-  /* 2. Input ocupa tudo e remove a borda direita (onde encosta no botão) */
-  :host ::ng-deep .p-autocomplete-input { 
-      width: 100%; 
-      border-right: none; 
-      border-top-right-radius: 0; 
-      border-bottom-right-radius: 0;
-  }
-  
-  /* 3. Transforma o botão lateral em apenas um ícone integrado */
-  :host ::ng-deep .p-autocomplete-dropdown {
-      background: transparent !important;
-      border-left: none !important;
-      border-top: 1px solid #ced4da !important;    /* Mesma cor da borda do input */
-      border-bottom: 1px solid #ced4da !important; /* Mesma cor da borda do input */
-      border-right: 1px solid #ced4da !important;  /* Mesma cor da borda do input */
-      color: #6c757d !important; /* Cor cinza do ícone */
-  }
-  
-  /* 4. Tira o efeito de botão azul ao passar o mouse */
-  :host ::ng-deep .p-autocomplete-dropdown:hover {
-      background: transparent !important;
-      color: #6c757d !important;
-  }
-
-  /* Cursores do Mapa (mantidos) */
-  :host.cursor-draw ::ng-deep .mapboxgl-canvas-container { cursor: crosshair !important; }
-  :host.cursor-pin ::ng-deep .mapboxgl-canvas-container { cursor: copy !important; }
-`]
+  styleUrls: ['./property-create.css']
 })
 export class PropertyCreateComponent implements OnInit {
 
@@ -82,18 +45,24 @@ export class PropertyCreateComponent implements OnInit {
   loading: boolean = false;
   step: number = 1;
 
+  // Variáveis de Edição
+  isEditMode: boolean = false;
+  currentPropertyId: number | null = null;
+
+  // Dados Principais
   newProperty: any = {
-    lead: null,
-    name: '',
-    city: null,
-    culture: '',
-    obs: '',
-    area: null,
-    geometry: null,
-    lat: null,
-    lng: null
+    lead: null, name: '', city: null, culture: '', obs: '',
+    area: null, geometry: null, lat: null, lng: null
   };
 
+  tempPolygonGeometry: any = null;
+  tempPolygonArea: number | null = null;
+  tempPinGeometry: any = null;
+  tempPinArea: number | null = null;
+  tempPinLat: number | null = null;
+  tempPinLng: number | null = null;
+
+  // Listas
   leadsList: any[] = [];
   filteredLeads: any[] = [];
   allCities: any[] = [];
@@ -105,10 +74,9 @@ export class PropertyCreateComponent implements OnInit {
     { label: 'Algodão', value: 'Algodão' }
   ];
 
-  // --- DADOS PASSO 2 (MAPA) ---
+  // Mapa e Controles
   map!: mapboxgl.Map;
   draw!: MapboxDraw;
-
   mapModeOptions = [
     { label: 'Desenhar Área', value: 'draw' },
     { label: 'Inserir Pin', value: 'pin' }
@@ -117,14 +85,14 @@ export class PropertyCreateComponent implements OnInit {
 
   manualAreaInput: number | null = null;
   isMapConfirmed: boolean = false;
-  isValidGeometry: boolean = false; // Controla se o botão Salvar habilita
+  isValidGeometry: boolean = false;
   currentMarker: mapboxgl.Marker | null = null;
 
   constructor(
     private leadService: LeadService,
     private propertyService: PropertyService,
     private messageService: MessageService,
-    private http: HttpClient // Para buscar cidade na API Mapbox
+    private http: HttpClient
   ) {
     (mapboxgl as any).accessToken = environment.mapboxToken;
   }
@@ -134,10 +102,10 @@ export class PropertyCreateComponent implements OnInit {
     this.leadService.getLeads().subscribe(l => this.leadsList = l);
   }
 
-  // --- NAVEGAÇÃO ---
+  // --- NAVEGAÇÃO E SETUP ---
 
-  open() {
-    this.resetForm();
+  open(propertyToEdit: any = null) {
+    this.resetForm(propertyToEdit);
     this.visible = true;
     this.step = 1;
   }
@@ -155,47 +123,316 @@ export class PropertyCreateComponent implements OnInit {
     this.step = 2;
     this.isValidGeometry = false;
 
-    // Inicia mapa e geocodificação
     setTimeout(() => {
       this.initMap();
-      this.centerMapOnCity(); // Foca na cidade
-      this.startDrawGuidance(); // Dicas visuais
+      if (!this.isEditMode) {
+        this.centerMapOnCity();
+        this.startDrawGuidance();
+      }
     }, 200);
   }
 
   prevStep() {
     this.step = 1;
-
     if (this.map) {
       this.map.remove();
       this.map = undefined!;
     }
   }
 
+  // --- MAPA ---
+
+  initMap() {
+    if (this.map) {
+      this.map.remove();
+    }
+
+    this.map = new mapboxgl.Map({
+      container: 'map-create',
+      style: 'mapbox://styles/mapbox/satellite-streets-v12',
+      center: [-47.5, -18.5],
+      zoom: 5
+    });
+
+    this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
+
+    // --- MUDANÇA PRINCIPAL AQUI ---
+    // Decide qual ferramenta ativar baseado no que o resetForm definiu
+    const startMode = this.selectedMapMode === 'draw' ? 'draw_polygon' : 'simple_select';
+
+    this.draw = new MapboxDraw({
+      displayControlsDefault: false,
+      controls: { polygon: true, trash: true },
+      defaultMode: startMode // <--- Usa o modo dinâmico
+    });
+
+    this.map.addControl(this.draw, 'top-left');
+
+    this.map.on('draw.create', (e) => this.onDrawUpdate(e));
+    this.map.on('draw.delete', () => this.onDrawDelete());
+    this.map.on('draw.update', (e) => this.onDrawUpdate(e));
+
+    this.map.on('click', (e) => {
+      if (this.selectedMapMode === 'pin') {
+        this.addPin(e.lngLat);
+      }
+    });
+
+    this.map.on('load', () => {
+      this.map.resize();
+
+      if (this.isEditMode && this.newProperty.geometry) {
+        this.loadExistingGeometry();
+      } else if (this.selectedMapMode === 'draw') {
+        this.messageService.add({ severity: 'info', summary: 'Modo Desenho', detail: 'O mapa está pronto. Clique para desenhar.' });
+      }
+    });
+  }
+
+  loadExistingGeometry() {
+    const geo = this.newProperty.geometry;
+    if (!geo) return;
+
+    // Detecta se é um Círculo gerado por Pin (65 coordenadas)
+    const isPinPolygon = geo.type === 'Polygon' && geo.coordinates[0].length === 65;
+
+    if (geo.type === 'Point' || isPinPolygon) {
+      // --- MODO PIN ---
+      this.selectedMapMode = 'pin'; // Garante que a variável esteja certa
+
+      // Precisamos do centro. Se for Point é fácil. Se for Polygon, usamos o Lat/Lng salvo ou calculamos o centro.
+      let centerLng, centerLat;
+
+      if (geo.type === 'Point') {
+        centerLng = geo.coordinates[0];
+        centerLat = geo.coordinates[1];
+      } else {
+        // Se for Polígono, usa as colunas lat/lng salvas (preferencial) ou calcula centróide
+        centerLng = this.newProperty.lng || turf.centroid(geo).geometry.coordinates[0];
+        centerLat = this.newProperty.lat || turf.centroid(geo).geometry.coordinates[1];
+      }
+
+      // Preenche os backups para troca de aba
+      this.tempPinGeometry = geo;
+      this.tempPinArea = this.newProperty.area;
+      this.tempPinLat = centerLat;
+      this.tempPinLng = centerLng;
+
+      this.manualAreaInput = this.newProperty.area;
+
+      // Adiciona o PIN (isso vai chamar updateCircleFromPin e desenhar o círculo verde automaticamente)
+      this.addPin({ lng: centerLng, lat: centerLat } as any, false);
+
+      this.map.flyTo({ center: [centerLng, centerLat], zoom: 14 });
+
+    } else {
+      // --- MODO DESENHO ---
+      this.selectedMapMode = 'draw';
+
+      this.tempPolygonGeometry = geo;
+      this.tempPolygonArea = this.newProperty.area;
+
+      this.draw.add(geo);
+      const center = turf.centroid(geo);
+      this.map.flyTo({ center: center.geometry.coordinates as [number, number], zoom: 13 });
+      this.isValidGeometry = true;
+    }
+  }
+
+  // --- ALTERNÂNCIA DE MODOS (COM MEMÓRIA) ---
+  changeMode(event: any) {
+    const newMode = event.value;
+
+    // 1. ANTES DE TROCAR: SALVA O ESTADO ATUAL NA MEMÓRIA TEMPORÁRIA
+    if (this.selectedMapMode === 'draw') {
+      if (this.newProperty.geometry && this.newProperty.geometry.type !== 'Point') {
+        this.tempPolygonGeometry = this.newProperty.geometry;
+        this.tempPolygonArea = this.newProperty.area;
+      }
+    } else if (this.selectedMapMode === 'pin') {
+      // Só salva se tiver algo válido
+      if (this.newProperty.geometry && this.newProperty.geometry.type === 'Point' && this.newProperty.lat) {
+        this.tempPinGeometry = this.newProperty.geometry;
+        this.tempPinArea = this.manualAreaInput;
+        this.tempPinLat = this.newProperty.lat;
+        this.tempPinLng = this.newProperty.lng;
+      }
+    }
+
+    // Troca o modo
+    this.selectedMapMode = newMode;
+
+    // Limpa a tela
+    this.isValidGeometry = false;
+    this.isMapConfirmed = false;
+    this.draw.deleteAll();
+    if (this.currentMarker) this.currentMarker.remove();
+    this.removeCircleLayers();
+
+    const drawBtn = document.querySelector('.mapbox-gl-draw_ctrl-draw-group');
+    if (drawBtn) drawBtn.classList.remove('highlight-draw-btn');
+
+    // 2. DEPOIS DE TROCAR: TENTA RESTAURAR DA MEMÓRIA
+    if (this.selectedMapMode === 'draw') {
+      this.manualAreaInput = null;
+
+      setTimeout(() => {
+        this.draw.changeMode('draw_polygon');
+
+        // Restaura Polígono se existir no backup
+        if (this.tempPolygonGeometry) {
+          this.draw.add(this.tempPolygonGeometry);
+          this.newProperty.geometry = this.tempPolygonGeometry;
+          this.newProperty.area = this.tempPolygonArea;
+          this.isValidGeometry = true;
+
+          const center = turf.centroid(this.tempPolygonGeometry);
+          this.map.flyTo({ center: center.geometry.coordinates as [number, number] });
+        } else {
+          // Se não tem backup, zera os dados para começar limpo
+          this.newProperty.area = 0;
+          this.newProperty.geometry = null;
+        }
+      }, 100);
+
+      if (!this.tempPolygonGeometry) this.startDrawGuidance();
+
+    } else {
+      // Modo PIN
+      this.draw.changeMode('simple_select');
+
+      // Restaura PIN se existir no backup
+      if (this.tempPinLat && this.tempPinLng) {
+        this.manualAreaInput = this.tempPinArea;
+        this.newProperty.area = this.tempPinArea;
+        this.newProperty.lat = this.tempPinLat;
+        this.newProperty.lng = this.tempPinLng;
+
+        this.addPin({ lng: this.tempPinLng, lat: this.tempPinLat } as any, false);
+        this.checkPinValidation();
+      } else {
+        // Se não tem backup, zera tudo (inclusive área) para forçar digitação
+        this.manualAreaInput = null;
+        this.newProperty.area = 0;
+        this.newProperty.geometry = null;
+        this.newProperty.lat = null;
+        this.newProperty.lng = null;
+        this.isValidGeometry = false;
+
+        this.messageService.add({ severity: 'info', summary: 'Modo Pin', detail: 'Clique no local da sede e informe a área.' });
+      }
+    }
+  }
+
+  addPin(lngLat: mapboxgl.LngLat, showToast: boolean = true) {
+    if (this.currentMarker) this.currentMarker.remove();
+
+    this.currentMarker = new mapboxgl.Marker({ color: '#ef4444' })
+      .setLngLat(lngLat)
+      .addTo(this.map);
+
+    this.newProperty.lat = lngLat.lat;
+    this.newProperty.lng = lngLat.lng;
+    this.newProperty.geometry = { type: 'Point', coordinates: [lngLat.lng, lngLat.lat] };
+
+    this.checkPinValidation();
+    this.updateCircleFromPin();
+
+    if (showToast) {
+      this.messageService.add({ severity: 'success', summary: 'Local Definido', detail: 'Informe a área para visualizar o raio.' });
+    }
+  }
+
+  // --- OUTROS MÉTODOS MANTIDOS (Filter, Save, etc) ---
+
+  onAreaManualInput() {
+    this.newProperty.area = this.manualAreaInput;
+    this.updateCircleFromPin();
+    this.checkPinValidation();
+  }
+
+  updateCircleFromPin() {
+    this.removeCircleLayers();
+    if (this.selectedMapMode === 'pin' && this.currentMarker && this.manualAreaInput && this.manualAreaInput > 0) {
+      const lngLat = this.currentMarker.getLngLat();
+      const center = [lngLat.lng, lngLat.lat];
+      const areaSqm = this.manualAreaInput * 10000;
+      const radiusMeters = Math.sqrt(areaSqm / Math.PI);
+      const radiusKm = radiusMeters / 1000;
+      const options: any = { steps: 64, units: 'kilometers' };
+      const circle = turf.circle(center, radiusKm, options);
+      this.newProperty.geometry = circle.geometry;
+      this.drawCircleOnMap(circle);
+    }
+  }
+
+  drawCircleOnMap(geojson: any) {
+    if (!this.map.getSource('circle-source')) {
+      this.map.addSource('circle-source', { type: 'geojson', data: geojson });
+      this.map.addLayer({ id: 'circle-fill', type: 'fill', source: 'circle-source', paint: { 'fill-color': '#faa', 'fill-opacity': 0.4 } });
+      this.map.addLayer({ id: 'circle-outline', type: 'line', source: 'circle-source', paint: { 'line-color': '#f00', 'line-width': 2 } });
+    } else {
+      (this.map.getSource('circle-source') as any).setData(geojson);
+    }
+  }
+
+  removeCircleLayers() {
+    if (this.map.getLayer('circle-fill')) this.map.removeLayer('circle-fill');
+    if (this.map.getLayer('circle-outline')) this.map.removeLayer('circle-outline');
+    if (this.map.getSource('circle-source')) this.map.removeSource('circle-source');
+  }
+
+  checkPinValidation() {
+    if (this.selectedMapMode === 'pin') {
+      this.isValidGeometry = (!!this.newProperty.lat && (this.newProperty.area > 0));
+    }
+  }
+
+  onDrawUpdate(e: any) {
+    const drawBtn = document.querySelector('.mapbox-gl-draw_ctrl-draw-group');
+    if (drawBtn) drawBtn.classList.remove('highlight-draw-btn');
+
+    const data = this.draw.getAll();
+    if (data.features.length > 0) {
+      const areaSqm = turf.area(data);
+      this.newProperty.area = parseFloat((areaSqm / 10000).toFixed(2));
+      this.newProperty.geometry = data.features[0].geometry;
+
+      const centroid = turf.centroid(data.features[0]);
+      this.newProperty.lng = centroid.geometry.coordinates[0];
+      this.newProperty.lat = centroid.geometry.coordinates[1];
+
+      this.isValidGeometry = true;
+    }
+  }
+
+  onDrawDelete() {
+    this.newProperty.area = 0;
+    this.newProperty.geometry = null;
+    this.isValidGeometry = false;
+  }
+
+  startDrawGuidance() {
+    if (this.selectedMapMode === 'draw') {
+      this.messageService.add({ severity: 'info', summary: 'Modo Desenho', detail: 'Clique no ícone de pentágono (⬠) para desenhar.', life: 5000 });
+      const drawBtn = document.querySelector('.mapbox-gl-draw_ctrl-draw-group');
+      if (drawBtn) drawBtn.classList.add('highlight-draw-btn');
+    }
+  }
+
   get isStep1Valid(): boolean {
     const p = this.newProperty;
-
-    // 1. Validação de Campos de Texto Simples
     const hasName = !!p.name && p.name.trim().length > 0;
     const hasCulture = !!p.culture;
-
-    // 2. Validação RIGOROSA de Lead
-    // Verifica se existe, se é do tipo 'object' (não string) e se tem 'id'
-    // Se o usuário digitar "teste", o tipo será 'string' e vai retornar FALSE
     const isLeadValid = p.lead && typeof p.lead === 'object' && 'id' in p.lead;
-
-    // 3. Validação RIGOROSA de Município
-    // Verifica se é objeto e se tem a propriedade 'label' ou 'value' (vindo do IBGE/Service)
     const isCityValid = p.city && typeof p.city === 'object' && ('label' in p.city || 'value' in p.city);
-
     return hasName && hasCulture && isLeadValid && isCityValid;
   }
 
-  // --- FILTROS ---
   filterLead(event: any) {
     const query = event.query?.toLowerCase() || '';
     if (!query) {
-      this.filteredLeads = [...this.leadsList]; // Mostra todos se vazio
+      this.filteredLeads = [...this.leadsList];
     } else {
       this.filteredLeads = this.leadsList.filter(l => l.name.toLowerCase().includes(query));
     }
@@ -213,7 +450,6 @@ export class PropertyCreateComponent implements OnInit {
   centerMapOnCity() {
     const cityName = this.newProperty.city.label || this.newProperty.city;
     if (cityName) {
-      // Busca a cidade na API do Mapbox para centrar o mapa lá
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${cityName}, Minas Gerais, Brazil.json?access_token=${environment.mapboxToken}&limit=1`;
       this.http.get(url).subscribe((res: any) => {
         if (res.features && res.features.length > 0) {
@@ -224,261 +460,32 @@ export class PropertyCreateComponent implements OnInit {
     }
   }
 
-  initMap() {
-    // 1. LIMPEZA: Se existir um mapa "zumbi" da navegação anterior, mata ele.
-    if (this.map) {
-      this.map.remove();
-    }
-
-    // 2. CRIAÇÃO
-    this.map = new mapboxgl.Map({
-      container: 'map-create',
-      style: 'mapbox://styles/mapbox/satellite-streets-v12',
-      center: [-47.5, -18.5], // Centro de MG
-      zoom: 5
-    });
-
-    this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
-
-    // 3. FERRAMENTA DE DESENHO
-    this.draw = new MapboxDraw({
-      displayControlsDefault: false,
-      controls: { polygon: true, trash: true },
-
-      // --- O SEGREDO ESTÁ AQUI ---
-      // 'draw_polygon': O cursor já vira uma mira e o primeiro clique já marca ponto.
-      // 'simple_select': O cursor é uma mãozinha e precisa clicar no botão pra desenhar.
-      defaultMode: 'draw_polygon'
-    });
-
-    // Adiciona os controles no topo esquerdo
-    this.map.addControl(this.draw, 'top-left');
-
-    // 4. EVENTOS DE DESENHO (Atualizar área e geometria)
-    this.map.on('draw.create', (e) => this.onDrawUpdate(e));
-    this.map.on('draw.delete', () => this.onDrawDelete());
-    this.map.on('draw.update', (e) => this.onDrawUpdate(e));
-
-    // 5. EVENTO DE CLIQUE (Apenas para o modo PIN)
-    this.map.on('click', (e) => {
-      if (this.selectedMapMode === 'pin') {
-        this.addPin(e.lngLat);
-      }
-    });
-
-    // 6. FINALIZAÇÃO (Ao carregar o mapa)
-    this.map.on('load', () => {
-      // Obrigatório para o mapa ocupar 100% da div dentro da Modal
-      this.map.resize();
-
-      // Feedback visual para o usuário
-      if (this.selectedMapMode === 'draw') {
-        this.messageService.add({
-          severity: 'info',
-          summary: 'Modo Desenho',
-          detail: 'O mapa está pronto. Clique para marcar os pontos da área.'
-        });
-      }
-    });
-  }
-
-  startDrawGuidance() {
-    if (this.selectedMapMode === 'draw') {
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Modo Desenho',
-        detail: 'Clique no ícone de pentágono (⬠) no mapa para começar a desenhar.',
-        life: 5000
-      });
-
-      // Adiciona classe para piscar o botão
-      const drawBtn = document.querySelector('.mapbox-gl-draw_ctrl-draw-group');
-      if (drawBtn) drawBtn.classList.add('highlight-draw-btn');
-    }
-  }
-
-  changeMode(event: any) {
-    this.selectedMapMode = event.value;
-
-    // Limpezas de praxe
-    this.isValidGeometry = false;
-    this.isMapConfirmed = false;
-    this.draw.deleteAll();
-    if (this.currentMarker) this.currentMarker.remove();
-    this.removeCircleLayers();
-    this.newProperty.area = 0;
-    this.newProperty.geometry = null;
-
-    if (this.selectedMapMode === 'draw') {
-      // --- A MÁGICA AQUI ---
-      // Força a ferramenta de desenho a ativar sozinha
-      // O setTimeout é pra garantir que o Mapbox processou a troca de aba
-      setTimeout(() => {
-        this.draw.changeMode('draw_polygon');
-      }, 100);
-
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Modo Desenho',
-        detail: 'Pode clicar no mapa para desenhar.'
-      });
-
-    } else {
-      // Se for PIN, desliga o desenho e volta pro cursor normal
-      this.draw.changeMode('simple_select');
-
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Modo Pin',
-        detail: 'Clique no local da sede.'
-      });
-    }
-  }
-
-  onDrawUpdate(e: any) {
-    // Para animação do botão quando começa a desenhar (Feedback Visual)
-    const drawBtn = document.querySelector('.mapbox-gl-draw_ctrl-draw-group');
-    if (drawBtn) drawBtn.classList.remove('highlight-draw-btn');
-
-    // Pega todos os desenhos do mapa
-    const data = this.draw.getAll();
-
-    // Verifica se tem algum desenho
-    if (data.features.length > 0) {
-
-      // 1. Calcula a ÁREA (Turf.js)
-      const areaSqm = turf.area(data);
-      // Converte m² para Hectares e fixa em 2 casas decimais
-      this.newProperty.area = parseFloat((areaSqm / 10000).toFixed(2));
-
-      // 2. Salva o GeoJSON COMPLETO (O desenho em si)
-      this.newProperty.geometry = data.features[0].geometry;
-
-      // 3. CALCULA O CENTRÓIDE (Aqui está o que você perguntou!)
-      // O Turf pega o polígono desenhado e acha o ponto central matemático dele.
-      const centroid = turf.centroid(data.features[0]);
-
-      // Salva as coordenadas desse ponto central para usar como PIN na lista
-      // O formato do GeoJSON é [Longitude, Latitude] (X, Y)
-      this.newProperty.lng = centroid.geometry.coordinates[0];
-      this.newProperty.lat = centroid.geometry.coordinates[1];
-
-      // Habilita o botão de salvar
-      this.isValidGeometry = true;
-    }
-  }
-
-  onDrawDelete() {
-    this.newProperty.area = 0;
-    this.newProperty.geometry = null;
-    this.isValidGeometry = false;
-  }
-
-  // --- LÓGICA DE PIN ---
-
-  addPin(lngLat: mapboxgl.LngLat) {
-    if (this.currentMarker) this.currentMarker.remove();
-
-    this.currentMarker = new mapboxgl.Marker({ color: '#ef4444' })
-      .setLngLat(lngLat)
-      .addTo(this.map);
-
-    this.newProperty.lat = lngLat.lat;
-    this.newProperty.lng = lngLat.lng;
-
-    // Salva geometria de ponto (fallback)
-    this.newProperty.geometry = { type: 'Point', coordinates: [lngLat.lng, lngLat.lat] };
-
-    this.checkPinValidation();
-    this.updateCircleFromPin();
-
-    this.messageService.add({ severity: 'success', summary: 'Local Definido', detail: 'Informe a área para visualizar o raio.' });
-  }
-
-  onAreaManualInput() {
-    this.newProperty.area = this.manualAreaInput;
-    this.updateCircleFromPin();
-    this.checkPinValidation();
-  }
-
-  updateCircleFromPin() {
-    this.removeCircleLayers();
-
-    if (this.selectedMapMode === 'pin' && this.currentMarker && this.manualAreaInput && this.manualAreaInput > 0) {
-      const lngLat = this.currentMarker.getLngLat();
-      const center = [lngLat.lng, lngLat.lat];
-
-      const areaSqm = this.manualAreaInput * 10000;
-      const radiusMeters = Math.sqrt(areaSqm / Math.PI);
-      const radiusKm = radiusMeters / 1000;
-
-      const options: any = { steps: 64, units: 'kilometers' };
-      const circle = turf.circle(center, radiusKm, options);
-
-      // Atualiza geometria para o círculo (melhor que ponto)
-      this.newProperty.geometry = circle.geometry;
-
-      this.drawCircleOnMap(circle);
-    }
-  }
-
-  drawCircleOnMap(geojson: any) {
-    if (!this.map.getSource('circle-source')) {
-      this.map.addSource('circle-source', { type: 'geojson', data: geojson });
-      this.map.addLayer({
-        id: 'circle-fill', type: 'fill', source: 'circle-source',
-        paint: { 'fill-color': '#faa', 'fill-opacity': 0.4 }
-      });
-      this.map.addLayer({
-        id: 'circle-outline', type: 'line', source: 'circle-source',
-        paint: { 'line-color': '#f00', 'line-width': 2 }
-      });
-    } else {
-      (this.map.getSource('circle-source') as any).setData(geojson);
-    }
-  }
-
-  removeCircleLayers() {
-    if (this.map.getLayer('circle-fill')) this.map.removeLayer('circle-fill');
-    if (this.map.getLayer('circle-outline')) this.map.removeLayer('circle-outline');
-    if (this.map.getSource('circle-source')) this.map.removeSource('circle-source');
-  }
-
-  checkPinValidation() {
-    if (this.selectedMapMode === 'pin') {
-      // Só valida se tiver Pin (Lat/Lng) e Área digitada
-      this.isValidGeometry = (!!this.newProperty.lat && (this.newProperty.area > 0));
-    }
-  }
-
-  // --- FINALIZAÇÃO ---
-
   confirmMap() {
     this.isMapConfirmed = true;
     this.messageService.add({ severity: 'success', summary: 'Pronto!', detail: 'Área confirmada.' });
   }
 
   save() {
-    if (!this.isValidGeometry) {
-      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Defina a área no mapa antes de salvar.' });
-      return;
-    }
-
+    if (!this.isValidGeometry) return;
     this.loading = true;
 
-    const payload = {
-      ...this.newProperty,
-      leadId: this.newProperty.lead.id,
-      city: this.newProperty.city.value || this.newProperty.city,
-    };
+    const payload = { ...this.newProperty, leadId: this.newProperty.lead.id, city: this.newProperty.city.value || this.newProperty.city };
     delete payload.lead;
 
-    this.propertyService.create(payload).subscribe({
+    let request$;
+    if (this.isEditMode && this.currentPropertyId) {
+      request$ = this.propertyService.update(this.currentPropertyId, payload);
+    } else {
+      request$ = this.propertyService.create(payload);
+    }
+
+    request$.subscribe({
       next: () => {
         this.loading = false;
         this.visible = false;
         this.onSave.emit();
-        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Propriedade Criada!' });
+        const msg = this.isEditMode ? 'Propriedade atualizada!' : 'Propriedade criada!';
+        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: msg });
       },
       error: (err) => {
         console.error(err);
@@ -488,22 +495,60 @@ export class PropertyCreateComponent implements OnInit {
     });
   }
 
-  resetForm() {
+  resetForm(dataToEdit: any = null) {
     if (this.map) {
       this.map.remove();
       this.map = undefined!;
     }
 
-    this.step = 1;
-    this.newProperty = {
-      lead: null, name: '', city: null, culture: '', obs: '',
-      area: null, geometry: null, lat: null, lng: null
-    };
+    // Limpa backups
+    this.tempPolygonGeometry = null;
+    this.tempPolygonArea = null;
+    this.tempPinGeometry = null;
+    this.tempPinArea = null;
+    this.tempPinLat = null;
+    this.tempPinLng = null;
+
     this.step = 1;
     this.isMapConfirmed = false;
     this.isValidGeometry = false;
     this.manualAreaInput = null;
     this.selectedMapMode = 'draw';
-    this.map = undefined!;
+
+    if (dataToEdit) {
+      this.isEditMode = true;
+      this.currentPropertyId = dataToEdit.id;
+      this.newProperty = { ...dataToEdit };
+
+      if (typeof this.newProperty.city === 'string' && this.allCities.length > 0) {
+        const foundCity = this.allCities.find(c => c.label === this.newProperty.city);
+        if (foundCity) this.newProperty.city = foundCity;
+      }
+
+      if (this.newProperty.geometry) {
+        this.isValidGeometry = true;
+        this.newProperty.area = parseFloat(this.newProperty.area);
+
+        // --- CORREÇÃO AQUI ---
+        // Verifica se é um polígono com 65 pontos (Padrão do círculo de 64 steps)
+        const isPinPolygon = this.newProperty.geometry.type === 'Polygon' &&
+          this.newProperty.geometry.coordinates[0].length === 65;
+
+        // Se for Ponto OU for um "Polígono de Pin", ativa o modo PIN
+        if (this.newProperty.geometry.type === 'Point' || isPinPolygon) {
+          this.selectedMapMode = 'pin';
+          this.manualAreaInput = this.newProperty.area;
+        } else {
+          this.selectedMapMode = 'draw';
+        }
+      }
+    } else {
+      this.isEditMode = false;
+      this.currentPropertyId = null;
+      this.newProperty = {
+        lead: null, name: '', city: null, culture: '', obs: '',
+        area: null, geometry: null, lat: null, lng: null
+      };
+    }
   }
 }

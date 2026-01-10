@@ -58,10 +58,8 @@ export class LeadsService {
       query.andWhere('lead.city = :city', { city });
     }
 
-    // Filtro de Prioridade (Dropdown)
-    if (priority && priority !== 'Todos') {
-      const isPriority = priority === 'Prioritário'; // Converte string para boolean
-      query.andWhere('lead.isPriority = :isPriority', { isPriority });
+    if (priority !== undefined) {
+      query.andWhere('lead.isPriority = :isPriority', { isPriority: priority });
     }
 
     query.orderBy('lead.isPriority', 'DESC');

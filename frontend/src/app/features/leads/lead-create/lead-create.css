@@ -1,0 +1,47 @@
+/* lead-create.css */
+
+:host ::ng-deep .p-dialog-content { 
+    overflow-y: visible; 
+}
+
+/* --- MÁGICA VISUAL DO AUTOCOMPLETE (Igual ao Property Create) --- */
+:host ::ng-deep .p-autocomplete { 
+    width: 100%; 
+    display: flex; 
+}
+
+:host ::ng-deep .p-autocomplete-input { 
+    width: 100%; 
+    border-right: 0 none !important; 
+    border-top-right-radius: 0; 
+    border-bottom-right-radius: 0;
+    box-shadow: none !important; /* Remove sombra que cria degrau */
+}
+
+:host ::ng-deep .p-autocomplete-dropdown {
+    background: transparent !important; 
+    border-left: 0 none !important; 
+    border-top-left-radius: 0; 
+    border-bottom-left-radius: 0;
+    color: #6c757d !important;
+    width: 2.5rem;
+    border-color: #ced4da;
+}
+
+/* CORREÇÃO DO FOCO (Verde #10b981) */
+:host ::ng-deep .p-autocomplete.p-focus .p-autocomplete-input {
+    border-color: #10b981 !important; 
+}
+:host ::ng-deep .p-autocomplete.p-focus .p-autocomplete-dropdown {
+    border-color: #10b981 !important;
+}
+
+/* HOVER */
+:host ::ng-deep .p-autocomplete:hover .p-autocomplete-input,
+:host ::ng-deep .p-autocomplete:hover .p-autocomplete-dropdown {
+    border-color: #10b981 !important;
+}
+:host ::ng-deep .p-autocomplete-dropdown:hover {
+    background: transparent !important;
+    color: #10b981 !important;
+}

@@ -11,7 +11,7 @@
     [focusOnShow]="false"
     >
     
-    <div *ngIf="step === 1" class="p-fluid grid formgrid">
+   <div *ngIf="step === 1" class="p-fluid grid formgrid">
         
         <div class="field col-12">
             <label class="font-bold text-900">Lead (Proprietário) *</label>
@@ -23,12 +23,11 @@
                 [dropdown]="true" 
                 [completeOnFocus]="true"
                 placeholder="Selecione ou digite..."
-                [forceSelection]="true">
+                [forceSelection]="true"
+                appendTo="body">
                 
                 <ng-template let-lead pTemplate="item">
-                    <div class="flex flex-column">
-                        <span class="font-bold">{{ lead.name }}</span>
-                    </div>
+                    <div>{{ lead.name }}</div>
                 </ng-template>
             </p-autoComplete>
         </div>
@@ -48,7 +47,8 @@
                 [dropdown]="true" 
                 [completeOnFocus]="true"
                 placeholder="Selecione ou digite..."
-                [forceSelection]="true">
+                [forceSelection]="true"
+                appendTo="body">
             </p-autoComplete>
         </div>
 
@@ -60,7 +60,8 @@
                 placeholder="Selecione..."
                 optionLabel="label"
                 optionValue="value"
-                styleClass="w-full">
+                styleClass="w-full"
+                appendTo="body">
             </p-dropdown>
         </div>
 
@@ -83,17 +84,20 @@
             </p-selectButton>
 
             <div *ngIf="selectedMapMode === 'pin'" class="flex align-items-center gap-2 bg-yellow-50 p-2 border-round border-1 border-yellow-200">
-                <span class="font-bold text-900">Área Total:</span>
+    <span class="font-bold text-900">Área Total:</span>
+    
+            <div class="p-inputgroup w-10rem">
                 <p-inputNumber 
-                    [(ngModel)]="manualAreaInput" 
-                    (onInput)="onAreaManualInput()" 
-                    suffix=" ha" 
-                    [min]="0"
-                    [maxFractionDigits]="2"
-                    placeholder="0.00"
-                    inputStyleClass="w-8rem text-right">
+                [(ngModel)]="manualAreaInput" 
+                (onInput)="onAreaManualInput()" 
+                [min]="0" 
+                [maxFractionDigits]="2" 
+                placeholder="0.00" 
+                inputStyleClass="text-right">
                 </p-inputNumber>
-                <i class="pi pi-info-circle text-yellow-600" pTooltip="Digite a área para ver o raio no mapa" tooltipPosition="top"></i>
+        <span class="p-inputgroup-addon">ha</span>
+            </div>
+            <i class="pi pi-info-circle text-yellow-600" pTooltip="Digite a área para ver o raio no mapa" tooltipPosition="top"></i>
             </div>
 
             <div *ngIf="selectedMapMode === 'draw'" class="bg-gray-100 p-2 border-round border-1 border-gray-300 flex align-items-center gap-2">

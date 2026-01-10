@@ -63,7 +63,6 @@ export class LeadsListComponent implements OnInit {
     }
 
     handleFilterChange(filters: LeadFilters) {
-        console.log('Filtros recebidos do componente filho:', filters);
         this.loadLeads(filters);
     }
 
@@ -90,8 +89,6 @@ export class LeadsListComponent implements OnInit {
             this.leadService.delete(lead.id).subscribe({
                 next: () => {
                     this.leads = this.leads.filter(l => l.id !== lead.id);
-
-                    console.log('Lead excluído com sucesso');
                 },
                 error: (err) => {
                     console.error('Erro ao excluir:', err);
@@ -106,7 +103,6 @@ export class LeadsListComponent implements OnInit {
     }
 
     saveLead() {
-        console.log('Botão Salvar clicado. Dados:', this.newLead);
         this.displayModal = false;
         this.resetForm();
     }

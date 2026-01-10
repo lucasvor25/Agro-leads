@@ -1,19 +1,33 @@
-import { IsOptional, IsString, IsBooleanString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsOptional, IsString, IsBoolean } from 'class-validator';
 
 export class GetLeadsFilterDto {
-    @IsOptional()
-    @IsString()
-    search?: string; // Para Nome, CPF ou Email
 
     @IsOptional()
     @IsString()
+    @Transform(({ value }) => value?.trim()) // Remove espaços acidentais da busca
+    search?: string;
+
+    @IsOptional()
+    @IsString()
+    @Transform(({ value }) => value?.trim())
     status?: string;
 
     @IsOptional()
     @IsString()
+    @Transform(({ value }) => value?.trim())
     city?: string;
 
     @IsOptional()
-    @IsString() // Recebemos como string 'true', 'false' ou undefined
-    priority?: string;
+    @IsBoolean()
+    @Transform(({ value }) => {
+        if (value === 'Prioritário') return true;
+        if (value === 'Normal') return false;
+        if (value === 'true') return true;
+        if (value === 'false') return false;
+
+        return undefined;
+    })
+
+    priority?: boolean;
 }

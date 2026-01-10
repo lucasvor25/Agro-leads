@@ -7,7 +7,7 @@
       pInputText 
       [(ngModel)]="filters.search" 
       (ngModelChange)="onFilterChange('search')"
-      placeholder="Buscar por nome, cpf ou email..." 
+      placeholder="Buscar por nome, cpf ou email" 
       class="w-full" 
     />
   </span>
@@ -31,15 +31,4 @@
     optionLabel="label" 
     optionValue="value">
   </p-dropdown>
-
-  <p-dropdown 
-    [options]="priorityOptions" 
-    [(ngModel)]="filters.priority" 
-    (onChange)="onFilterChange('priority')"
-    placeholder="Prioridade"
-    styleClass="w-full md:w-10rem"
-    optionLabel="label" 
-    optionValue="value">
-  </p-dropdown>
-
 </div>

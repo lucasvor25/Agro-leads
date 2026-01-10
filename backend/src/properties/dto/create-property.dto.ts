@@ -1,39 +1,60 @@
-// backend/src/properties/dto/create-property.dto.ts
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import {
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsString,
+    Min,
+    Max,
+    IsObject,
+    IsInt
+} from 'class-validator';
 
 export class CreatePropertyDto {
-    @IsNotEmpty()
+
     @IsString()
+    @IsNotEmpty({ message: 'O nome da propriedade é obrigatório' })
+    @Transform(({ value }) => value?.trim()) // Remove espaços extras
     name: string;
 
-    @IsNotEmpty()
     @IsString()
+    @IsNotEmpty({ message: 'O município é obrigatório' })
+    @Transform(({ value }) => value?.trim())
     city: string;
 
-    @IsNotEmpty()
     @IsString()
+    @IsNotEmpty({ message: 'A cultura é obrigatória' })
+    @Transform(({ value }) => value?.trim())
     culture: string;
 
-    @IsNotEmpty()
-    @IsNumber()
+    @IsNumber({}, { message: 'A área deve ser um número válido' })
+    @Min(0, { message: 'A área não pode ser negativa' })
     area: number;
 
     @IsOptional()
-    geometry: any; // Pode ser um objeto GeoJSON complexo
+    @IsObject({ message: 'A geometria deve ser um objeto JSON válido' })
+    geometry?: any;
 
-    @IsOptional()
     @IsString()
-    obs: string;
+    @IsOptional()
+    @Transform(({ value }) => value?.trim())
+    obs?: string;
 
     @IsOptional()
     @IsNumber()
-    lat: number;
+    @Min(-90)
+    @Max(90, { message: 'Latitude inválida (deve ser entre -90 e 90)' })
+    lat?: number;
 
     @IsOptional()
     @IsNumber()
-    lng: number;
+    @Min(-180)
+    @Max(180, { message: 'Longitude inválida (deve ser entre -180 e 180)' })
+    lng?: number;
 
-    @IsNotEmpty()
+    @IsNotEmpty({ message: 'O ID do lead é obrigatório para vincular a propriedade' })
     @IsNumber()
-    leadId: number; // Precisamos saber de quem é a propriedade
+    @IsInt({ message: 'O ID do lead deve ser um número inteiro' })
+    @Min(1)
+    leadId: number;
 }

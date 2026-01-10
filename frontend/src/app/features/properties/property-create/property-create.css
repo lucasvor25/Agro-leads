@@ -1,0 +1,70 @@
+/* property-create.css */
+
+:host ::ng-deep .p-dialog-content { 
+    overflow-y: visible; 
+}
+
+#map-create { 
+    height: 400px; 
+    width: 100%; 
+    border-radius: 8px; 
+}
+
+/* --- CORREÇÃO VISUAL PARA UNIFICAR AUTOCOMPLETE (VERDE) --- */
+
+/* 1. Alinhamento */
+:host ::ng-deep .p-autocomplete { 
+    width: 100%; 
+    display: flex;
+}
+
+/* 2. INPUT: Remove borda direita */
+:host ::ng-deep .p-autocomplete-input { 
+    width: 100%; 
+    border-right: 0 none !important; 
+    border-top-right-radius: 0; 
+    border-bottom-right-radius: 0;
+}
+
+/* 3. BOTÃO (SETA): Remove borda esquerda, fundo transparente */
+:host ::ng-deep .p-autocomplete-dropdown {
+    background: transparent !important;
+    border-left: 0 none !important; 
+    border-top-left-radius: 0; 
+    border-bottom-left-radius: 0;
+    color: #6c757d !important;
+    width: 2.5rem;
+    border-color: #ced4da;
+}
+
+/* 4. CORREÇÃO DO FOCO (VERDE #10b981) */
+:host ::ng-deep .p-autocomplete.p-focus .p-autocomplete-input {
+    box-shadow: none !important; 
+    border-color: #10b981 !important;
+}
+
+/* Força a seta a ficar Verde também no foco */
+:host ::ng-deep .p-autocomplete.p-focus .p-autocomplete-dropdown {
+    border-color: #10b981 !important;
+}
+
+/* 5. HOVER (Ao passar o mouse, acende verde) */
+:host ::ng-deep .p-autocomplete:hover .p-autocomplete-input,
+:host ::ng-deep .p-autocomplete:hover .p-autocomplete-dropdown {
+    border-color: #10b981 !important;
+}
+
+/* Seta fica verde ao passar o mouse nela */
+:host ::ng-deep .p-autocomplete-dropdown:hover {
+    background: transparent !important;
+    color: #10b981 !important;
+}
+
+/* Cursores do Mapa */
+:host.cursor-draw ::ng-deep .mapboxgl-canvas-container { 
+    cursor: crosshair !important; 
+}
+
+:host.cursor-pin ::ng-deep .mapboxgl-canvas-container { 
+    cursor: copy !important; 
+}

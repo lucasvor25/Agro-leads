@@ -1,0 +1,44 @@
+<div class="surface-card p-3 border-round shadow-1 mb-4 flex flex-column md:flex-row gap-3">
+    
+    <div class="p-input-icon-left flex-1">
+        <i class="pi pi-search"></i>
+        <input 
+            type="text" 
+            pInputText 
+            [(ngModel)]="filters.search" 
+            (ngModelChange)="emitFilter()"
+            placeholder="Buscar por nome ou lead..." 
+            class="w-full" />
+    </div>
+
+    <p-dropdown 
+        [options]="cultureOptions" 
+        [(ngModel)]="filters.culture" 
+        (onChange)="emitFilter()"
+        optionLabel="label" 
+        optionValue="value"
+        placeholder="Todas Culturas" 
+        styleClass="w-full md:w-14rem">
+    </p-dropdown>
+
+    <p-dropdown 
+        [options]="cityOptions" 
+        [(ngModel)]="filters.city" 
+        (onChange)="emitFilter()"
+        optionLabel="label" 
+        optionValue="value" 
+        placeholder="Todos Municípios" 
+        styleClass="w-full md:w-16rem"
+        emptyMessage="Sem cidades nos dados">
+    </p-dropdown>
+
+    <p-dropdown 
+        [options]="sortOptions" 
+        [(ngModel)]="filters.sort" 
+        (onChange)="emitFilter()"
+        optionLabel="label" 
+        optionValue="value"
+        styleClass="w-full md:w-12rem">
+    </p-dropdown>
+
+</div>

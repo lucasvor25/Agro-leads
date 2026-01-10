@@ -33,9 +33,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
   ],
   providers: [MessageService],
   templateUrl: './lead-create.html',
-  styles: [`
-    :host ::ng-deep .p-dialog-content { overflow-y: visible; }
-  `]
+  styleUrls: ['./lead-create.css']
 })
 export class LeadCreateComponent implements OnInit {
 
@@ -84,10 +82,14 @@ export class LeadCreateComponent implements OnInit {
   }
 
   filterCity(event: any) {
-    const query = event.query.toLowerCase();
-    this.filteredCities = this.mgCities.filter(city =>
-      city.label.toLowerCase().includes(query)
-    );
+    const query = event.query?.toLowerCase() || '';
+    if (!query) {
+      this.filteredCities = [...this.mgCities];
+    } else {
+      this.filteredCities = this.mgCities.filter(city =>
+        city.label.toLowerCase().includes(query)
+      );
+    }
   }
 
   // --- ALTERADO: Agora aceita um lead opcional ---
