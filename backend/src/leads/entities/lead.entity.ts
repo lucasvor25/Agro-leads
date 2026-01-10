@@ -31,7 +31,7 @@ export class Lead {
     area: number;
 
     @Column({ type: 'text', nullable: true })
-    obs: string;
+    obs?: string;
 
     @Column({ default: false })
     isPriority: boolean;
@@ -46,5 +46,5 @@ export class Lead {
     updatedAt: Date;
 
     @OneToMany(() => Property, (property) => property.lead)
-    properties: Property[];
+    properties?: Property[];
 }

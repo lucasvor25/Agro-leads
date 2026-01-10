@@ -33,6 +33,14 @@ export class LeadService {
     return this.http.get<Lead>(`${this.apiUrl}/${id}`);
   }
 
+  update(id: number, lead: any): Observable<Lead> {
+    return this.http.patch<Lead>(`${this.apiUrl}/${id}`, lead);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
   getCitiesMG(): Observable<any[]> {
     return this.http.get<any[]>('https://servicodados.ibge.gov.br/api/v1/localidades/estados/MG/municipios')
       .pipe(

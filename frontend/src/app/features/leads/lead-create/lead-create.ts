@@ -12,7 +12,7 @@ import { LeadService } from '../../../core/services/lead.service';
 import { InputMaskModule } from 'primeng/inputmask';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
-import { AutoCompleteModule } from 'primeng/autocomplete'; // Módulo do AutoComplete
+import { AutoCompleteModule } from 'primeng/autocomplete';
 
 @Component({
   selector: 'app-lead-create',
@@ -44,10 +44,12 @@ export class LeadCreateComponent implements OnInit {
   visible: boolean = false;
   loading: boolean = false;
 
-  // Lista Mestra (Todas as cidades do IBGE)
-  mgCities: any[] = [];
+  // --- VARIAVEIS DE CONTROLE DE EDIÇÃO ---
+  isEditMode: boolean = false;
+  currentLeadId: number | null = null;
+  // ---------------------------------------
 
-  // Lista Filtrada (O que aparece enquanto digita)
+  mgCities: any[] = [];
   filteredCities: any[] = [];
 
   newLead: any = {
@@ -55,7 +57,7 @@ export class LeadCreateComponent implements OnInit {
     cpf: '',
     email: '',
     phone: '',
-    city: null, // Pode ser string ou objeto do autocomplete
+    city: null,
     area: null,
     status: 'Novo',
     isPriority: false,
@@ -76,48 +78,60 @@ export class LeadCreateComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    // Carrega todas as cidades na memória
     this.leadService.getCitiesMG().subscribe(cities => {
       this.mgCities = cities;
     });
   }
 
-  // --- LÓGICA DO AUTOCOMPLETE ---
   filterCity(event: any) {
     const query = event.query.toLowerCase();
-
-    // Filtra a lista mestra baseado no que o usuário digitou
     this.filteredCities = this.mgCities.filter(city =>
       city.label.toLowerCase().includes(query)
     );
   }
 
-  open() {
-    this.resetForm();
+  // --- ALTERADO: Agora aceita um lead opcional ---
+  open(leadToEdit?: any) {
     this.visible = true;
+
+    if (leadToEdit) {
+      // MODO EDIÇÃO
+      this.isEditMode = true;
+      this.currentLeadId = leadToEdit.id;
+
+      this.newLead = {
+        ...leadToEdit,
+        city: leadToEdit.city ? { label: leadToEdit.city, value: leadToEdit.city } : null
+      };
+
+    } else {
+      // MODO CRIAÇÃO
+      this.isEditMode = false;
+      this.currentLeadId = null;
+      this.resetForm();
+    }
   }
 
   close() {
     this.visible = false;
+    this.resetForm();
   }
 
   save() {
 
     let cityClean = this.newLead.city;
-
     if (this.newLead.city && this.newLead.city.value) {
       cityClean = this.newLead.city.value;
     }
 
-    // --- 1. VALIDAÇÃO ---
-    // Note que agora validamos 'cityClean', não mais 'this.newLead.city' diretamente
+    // --- 1. VALIDAÇÃO (Serve para os dois casos) ---
     if (!this.newLead.name || !cityClean || !this.newLead.phone) {
       this.messageService.add({ severity: 'warn', summary: 'Atenção', detail: 'Preencha Nome, Telefone e Município.' });
       return;
     }
 
     if (!this.newLead.area || this.newLead.area <= 0) {
-      this.messageService.add({ severity: 'warn', summary: 'Atenção', detail: 'A Área é obrigatória para definir prioridade.' });
+      this.messageService.add({ severity: 'warn', summary: 'Atenção', detail: 'A Área é obrigatória.' });
       return;
     }
 
@@ -133,29 +147,50 @@ export class LeadCreateComponent implements OnInit {
       return;
     }
 
-    // --- 2. PREPARAÇÃO E ENVIO ---
-    const leadToSend = { ...this.newLead };
-    leadToSend.cpf = cpfClean;
-    leadToSend.city = cityClean; // Garante que vai a string da cidade
+    // --- 2. PREPARAÇÃO ---
+    const payload = { ...this.newLead };
+    payload.cpf = cpfClean;
+    payload.city = cityClean; // Envia apenas a string da cidade
 
     this.loading = true;
 
-    this.leadService.create(leadToSend).subscribe({
-      next: () => {
-        this.loading = false;
-        this.visible = false;
-        this.onSave.emit();
-        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Lead criado!' });
-        this.resetForm();
-      },
-      error: (err) => {
-        console.error(err);
-        this.loading = false;
-        // Tenta pegar mensagem do backend ou usa genérica
-        const msg = err.error?.message || 'Falha ao salvar lead.';
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: msg });
-      }
-    });
+    // --- 3. DECISÃO: CRIAR OU ATUALIZAR ---
+    if (this.isEditMode && this.currentLeadId) {
+
+      // >>> CHAMADA DE UPDATE <<<
+      this.leadService.update(this.currentLeadId, payload).subscribe({
+        next: () => {
+          this.finalizeSave('Lead atualizado com sucesso!');
+        },
+        error: (err) => this.handleError(err)
+      });
+
+    } else {
+
+      // >>> CHAMADA DE CREATE <<<
+      this.leadService.create(payload).subscribe({
+        next: () => {
+          this.finalizeSave('Lead criado com sucesso!');
+        },
+        error: (err) => this.handleError(err)
+      });
+    }
+  }
+
+  // Métodos auxiliares para limpar o código do save()
+  private finalizeSave(successMessage: string) {
+    this.loading = false;
+    this.visible = false;
+    this.onSave.emit(); // Avisa o pai para recarregar a lista
+    this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: successMessage });
+    this.resetForm();
+  }
+
+  private handleError(err: any) {
+    console.error(err);
+    this.loading = false;
+    const msg = err.error?.message || 'Falha na operação.';
+    this.messageService.add({ severity: 'error', summary: 'Erro', detail: msg });
   }
 
   resetForm() {

@@ -19,7 +19,7 @@ import { Property } from './properties/entities/property.entity';
         database: process.env.DB_NAME,
         entities: [Lead, Property],
         migrations: ['dist/db/migrations/*.js'],
-        synchronize: false,
+        synchronize: true,
         migrationsRun: true,
         ssl: false,
       }),

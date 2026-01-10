@@ -15,5 +15,5 @@ export default new DataSource({
     ssl: false,
     entities: [Lead, Property],
     migrations: ['dist/src/db/migrations/*.js'],
-    synchronize: false,
+    synchronize: true,
 });

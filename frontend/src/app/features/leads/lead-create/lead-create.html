@@ -1,7 +1,7 @@
 <p-toast></p-toast>
 
 <p-dialog 
-    header="Novo Lead" 
+    [header]="isEditMode ? 'Editar Lead' : 'Novo Lead'" 
     [(visible)]="visible" 
     [modal]="true" 
     [style]="{width: '50vw'}" 
@@ -95,7 +95,14 @@
 
     <ng-template pTemplate="footer">
         <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="close()"></button>
-        <button pButton label="Criar Lead" icon="pi pi-check" class="p-button-success" (click)="save()" [loading]="loading"></button>
+        <button 
+            pButton 
+            [label]="isEditMode ? 'Salvar Alterações' : 'Criar Lead'" 
+            [icon]="isEditMode ? 'pi pi-save' : 'pi pi-check'"
+            class="p-button-success" 
+            (click)="save()" 
+            [loading]="loading">
+        </button>
     </ng-template>
 
 </p-dialog>

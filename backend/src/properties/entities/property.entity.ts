@@ -18,15 +18,12 @@ export class Property {
     @Column('decimal', { precision: 10, scale: 2 })
     area: number;
 
-    // O "Pulo do Gato" para o Mapbox:
-    // PostgreSQL tem um tipo 'jsonb' nativo. Perfeito para salvar GeoJSON!
     @Column({ type: 'jsonb', nullable: true })
     geometry: any;
 
     @Column({ type: 'text', nullable: true })
-    obs: string;
+    obs?: string;
 
-    // Relacionamento: Muitas Propriedades pertencem a UM Lead
     @ManyToOne(() => Lead, (lead) => lead.properties, { onDelete: 'CASCADE' })
     lead: Lead;
 
@@ -35,4 +32,10 @@ export class Property {
 
     @UpdateDateColumn()
     updatedAt: Date;
+
+    @Column('decimal', { precision: 10, scale: 6, nullable: true })
+    lat: number;
+
+    @Column('decimal', { precision: 10, scale: 6, nullable: true })
+    lng: number;
 }

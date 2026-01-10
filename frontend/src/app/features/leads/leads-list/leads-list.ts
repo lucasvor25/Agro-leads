@@ -77,6 +77,30 @@ export class LeadsListComponent implements OnInit {
         this.createModal.open();
     }
 
+    editLead(lead: Lead, event: Event) {
+        event.stopPropagation(); // Impede entrar nos detalhes
+
+        this.createModal.open(lead);
+    }
+
+    deleteLead(lead: Lead, event: Event) {
+        event.stopPropagation(); // Impede entrar nos detalhes
+
+        if (confirm(`Tem certeza que deseja excluir o lead ${lead.name}?`)) {
+            this.leadService.delete(lead.id).subscribe({
+                next: () => {
+                    this.leads = this.leads.filter(l => l.id !== lead.id);
+
+                    console.log('Lead excluído com sucesso');
+                },
+                error: (err) => {
+                    console.error('Erro ao excluir:', err);
+                    alert('Erro ao excluir o lead.');
+                }
+            });
+        }
+    }
+
     onLeadCreated() {
         this.loadLeads();
     }

@@ -82,8 +82,10 @@ export class LeadsService {
     });
   }
 
-  update(id: number, updateLeadDto: UpdateLeadDto) {
-    return this.leadsRepository.update(id, updateLeadDto);
+  async update(id: number, updateLeadDto: UpdateLeadDto) {
+    const { properties, id: leadId, ...leadData } = updateLeadDto as any;
+
+    return await this.leadsRepository.update(id, leadData);
   }
 
   remove(id: number) {

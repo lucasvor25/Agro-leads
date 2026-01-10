@@ -10,7 +10,7 @@
         pButton 
         label="Novo Lead" 
         icon="pi pi-plus" 
-        class="p-button-success border-round-xl" 
+        class="p-button-success border-round-xl shadow-2" 
         (click)="openNewLeadModal()">
     </button>
   </div>
@@ -23,22 +23,49 @@
   <app-lead-create (onSave)="onLeadCreated()"></app-lead-create>
 
   <div class="grid mt-4" *ngIf="leads.length > 0">
-    <div class="col-12 md:col-6 lg:col-4" *ngFor="let lead of leads"> <div (click)="viewDetails(lead.id)" 
-           class="surface-card p-4 border-round-2xl shadow-1 cursor-pointer transition-all transition-duration-300 hover:shadow-5 hover:-translate-y-1 h-full flex flex-column relative border-1"
-           [ngClass]="{'border-yellow-400 bg-yellow-50_': lead.isPriority, 'border-transparent': !lead.isPriority}">
+    <div class="col-12 md:col-6 lg:col-4" *ngFor="let lead of leads">
+       
+       <div (click)="viewDetails(lead.id)" 
+            class="surface-card p-4 border-round-2xl shadow-1 cursor-pointer transition-all transition-duration-300 hover:shadow-5 hover:-translate-y-1 h-full flex flex-column relative border-1"
+            [ngClass]="{'border-yellow-400 bg-yellow-50_': lead.isPriority, 'border-transparent': !lead.isPriority}">
         
         <div class="flex justify-content-between align-items-start mb-4">
-            <div class="flex flex-column gap-1">
-                <div class="flex align-items-center gap-2">
-                    <span class="text-xl font-bold text-900">{{ lead.name }}</span>
-                    <i *ngIf="lead.isPriority" class="pi pi-star-fill text-yellow-500 text-lg"></i>
+            
+            <div class="flex flex-column gap-1" style="max-width: 70%;">
+                <div class="flex align-items-center gap-2 flex-wrap">
+                    <span class="text-xl font-bold text-900 white-space-nowrap overflow-hidden text-overflow-ellipsis" style="max-width: 100%;">
+                        {{ lead.name }}
+                    </span>
+                    <p-tag [value]="lead.status" [severity]="getStatusSeverity(lead.status)" [rounded]="true" styleClass="text-xs"></p-tag>
                 </div>
                 
                 <span class="text-500 text-sm font-medium flex align-items-center gap-2" *ngIf="lead.cpf">
                     <i class="pi pi-id-card"></i> {{ lead.cpf }}
                 </span>
             </div>
-            <p-tag [value]="lead.status" [severity]="getStatusSeverity(lead.status)" [rounded]="true"></p-tag>
+
+            <div class="flex gap-1">
+                <button 
+                    pButton 
+                    type="button" 
+                    icon="pi pi-pencil" 
+                    class="p-button-rounded p-button-text p-button-secondary hover:surface-200" 
+                    pTooltip="Editar Lead"
+                    tooltipPosition="top"
+                    style="width: 2.5rem; height: 2.5rem;"
+                    (click)="editLead(lead, $event)">
+                </button>
+                <button 
+                    pButton 
+                    type="button" 
+                    icon="pi pi-trash" 
+                    class="p-button-rounded p-button-text p-button-danger hover:surface-200"
+                    pTooltip="Excluir Lead"
+                    tooltipPosition="top"
+                    style="width: 2.5rem; height: 2.5rem;"
+                    (click)="deleteLead(lead, $event)">
+                </button>
+            </div>
         </div>
 
         <div class="flex flex-column gap-3 mb-4">
@@ -61,27 +88,25 @@
                 <div class="w-2rem h-2rem border-circle bg-green-50 flex align-items-center justify-content-center flex-shrink-0">
                     <i class="pi pi-envelope text-green-500 text-sm"></i>
                 </div>
-                <span class="text-700 font-medium text-sm text-overflow-ellipsis overflow-hidden white-space-nowrap" style="max-width: 250px;">
+                <span class="text-700 font-medium text-sm text-overflow-ellipsis overflow-hidden white-space-nowrap">
                     {{ lead.email }}
                 </span>
             </div>
         </div>
 
-        <div class="surface-border w-full mb-3 mt-auto"></div>
-
         <div class="flex align-items-center justify-content-between text-xs">
             
-            <div class="flex align-items-center gap-2 bg-gray-100 px-3 py-1 border-round-3xl">
+            <div class="flex align-items-center gap-2 bg-gray-100 px-3 py-1 border-round-2xl">
                 <i class="pi pi-box text-gray-500"></i>
                 <span class="font-bold text-gray-700">{{ lead.area }} ha</span>
             </div>
 
             <div class="flex flex-column align-items-end gap-1">
-                <span class="text-500 flex align-items-center gap-1">
+                <span class="text-500 flex align-items-center gap-1" title="Data de Criação">
                     <i class="pi pi-calendar"></i> {{ lead.createdAt | date:'dd/MM/yy' }}
                 </span>
-
-                <span class="font-bold flex align-items-center gap-1"
+                
+                <span class="font-bold flex align-items-center gap-1" *ngIf="lead.lastContact"
                       [ngClass]="{'text-red-500': isContactOld(lead.lastContact), 'text-blue-600': !isContactOld(lead.lastContact)}">
                     <i class="pi pi-clock"></i> {{ lead.lastContact | timeAgo }}
                 </span>
