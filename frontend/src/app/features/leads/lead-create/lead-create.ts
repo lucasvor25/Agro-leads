@@ -118,6 +118,7 @@ export class LeadCreateComponent implements OnInit {
   save() {
     this.cpfInvalid = false;
     this.emailInvalid = false;
+
     let cityClean = this.newLead.city;
     if (this.newLead.city && this.newLead.city.value) {
       cityClean = this.newLead.city.value;
@@ -150,11 +151,13 @@ export class LeadCreateComponent implements OnInit {
     const payload = { ...this.newLead };
     payload.cpf = cpfClean;
     payload.city = cityClean;
+    payload.area = Number(this.newLead.area);
 
-    delete payload.isPriority;
     delete payload.id;
+    delete payload.isPriority;
     delete payload.createdAt;
     delete payload.updatedAt;
+    delete payload.properties;
 
     this.loading = true;
 

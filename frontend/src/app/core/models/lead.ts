@@ -6,7 +6,6 @@ export interface Lead {
     city: string;
     status: 'Novo' | 'Contato Inicial' | 'Em Negociação' | 'Convertido' | 'Perdido';
     area: number;
-    lastContact: string;
     isPriority: boolean;
     cpf?: string;
     propertiesCount?: number;

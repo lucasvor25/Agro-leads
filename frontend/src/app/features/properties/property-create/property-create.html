@@ -93,29 +93,28 @@
       >
       </p-selectButton>
 
-      <div
-        *ngIf="selectedMapMode === 'pin'"
-        class="flex align-items-center gap-2 bg-yellow-50 p-2 border-round border-1 border-yellow-200"
-      >
-        <span class="font-bold text-900">Área Total:</span>
+      <div *ngIf="selectedMapMode === 'pin'" class="area-display-box flex align-items-center gap-3">
+        <span class="font-bold text-700">Área Total:</span>
 
-        <div class="p-inputgroup w-10rem">
-          <p-selectButton
-            [options]="mapModeOptions"
-            [(ngModel)]="selectedMapMode"
-            (onChange)="changeMode($event)"
-            optionLabel="label"
-            optionValue="value"
-            styleClass="custom-select-button"
+        <div class="p-inputgroup" style="width: 130px">
+          <p-inputNumber
+            [(ngModel)]="manualAreaInput"
+            (onInput)="onAreaManualInput()"
+            [min]="0"
+            [maxFractionDigits]="2"
+            placeholder="0.00"
+            inputStyleClass="text-right"
           >
-          </p-selectButton>
+          </p-inputNumber>
           <span class="p-inputgroup-addon">ha</span>
         </div>
+
         <i
           class="pi pi-info-circle text-yellow-600"
-          pTooltip="Digite a área para ver o raio no mapa"
+          pTooltip="Informe a área para visualizar o raio no mapa"
           tooltipPosition="top"
-        ></i>
+        >
+        </i>
       </div>
 
       <div

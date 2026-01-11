@@ -29,11 +29,29 @@
   background-color: #ffffff !important;
   border: 1px solid #dee2e6 !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
-  height: 38px;
+  height: 44px;
   padding: 0 1rem !important;
   display: flex;
   align-items: center;
   border-radius: 8px !important;
+}
+
+:host ::ng-deep .area-display-box .p-inputgroup {
+  height: 32px;
+}
+
+:host ::ng-deep .area-display-box .p-inputnumber-input {
+  width: 80px !important;
+  height: 32px !important;
+  font-size: 0.9rem;
+  border-right: none !important;
+}
+
+:host ::ng-deep .area-display-box .p-inputgroup-addon {
+  height: 32px !important;
+  padding: 0 0.5rem !important;
+  font-size: 0.85rem;
+  background: #f8f9fa;
 }
 
 :host ::ng-deep .p-autocomplete {

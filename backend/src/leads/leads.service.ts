@@ -22,8 +22,6 @@ export class LeadsService {
       lead.isPriority = false;
     }
 
-    lead.lastContact = new Date();
-
     try {
       return await this.leadsRepository.save(lead);
     } catch (error) {

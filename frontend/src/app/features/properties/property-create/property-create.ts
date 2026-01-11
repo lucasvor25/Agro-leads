@@ -450,8 +450,20 @@ export class PropertyCreateComponent implements OnInit {
     if (!this.isValidGeometry) return;
     this.loading = true;
 
-    const payload = { ...this.newProperty, leadId: this.newProperty.lead.id, city: this.newProperty.city.value || this.newProperty.city };
+    const payload = {
+      ...this.newProperty,
+      leadId: this.newProperty.lead?.id,
+      city: this.newProperty.city?.value || this.newProperty.city
+    };
+
     delete payload.lead;
+    delete payload.id;
+    delete payload.createdAt;
+    delete payload.updatedAt;
+
+    if (payload.area) payload.area = Number(payload.area);
+    if (payload.lat) payload.lat = Number(payload.lat);
+    if (payload.lng) payload.lng = Number(payload.lng);
 
     let request$;
     if (this.isEditMode && this.currentPropertyId) {
@@ -469,9 +481,10 @@ export class PropertyCreateComponent implements OnInit {
         this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: msg });
       },
       error: (err) => {
-        console.error(err);
+        console.error('Erro retornado pelo servidor:', err);
         this.loading = false;
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao salvar.' });
+        const detailMsg = err.error?.message || 'Falha ao salvar.';
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: Array.isArray(detailMsg) ? detailMsg[0] : detailMsg });
       }
     });
   }

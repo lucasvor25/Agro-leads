@@ -36,9 +36,6 @@ export class Lead {
     @Column({ default: false })
     isPriority: boolean;
 
-    @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
-    lastContact: Date;
-
     @CreateDateColumn()
     createdAt: Date;
 
