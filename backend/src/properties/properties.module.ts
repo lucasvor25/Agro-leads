@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm'; // <--- Importe isso
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { PropertiesService } from './properties.service';
 import { PropertiesController } from './properties.controller';
-import { Property } from './entities/property.entity'; // <--- Importe a Entity Property
-import { Lead } from '../leads/entities/lead.entity'; // <--- Importe a Entity Lead
+import { Property } from './entities/property.entity';
+import { Lead } from '../leads/entities/lead.entity';
 
 @Module({
   imports: [

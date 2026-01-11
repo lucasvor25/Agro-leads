@@ -9,12 +9,12 @@ import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TooltipModule } from 'primeng/tooltip';
-import { ButtonModule } from 'primeng/button'; // Adicionado para o botão "Criar Lead"
+import { ButtonModule } from 'primeng/button';
 
-import { LeadService } from '../../core/services/lead.service';
-import { PropertyService } from '../../core/services/property.service';
+import { LeadService } from '../../core/services/lead';
 import { environment } from 'src/environments/environment';
 import * as mapboxgl from 'mapbox-gl';
+import { PropertyService } from 'src/app/core/services/property';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,18 +33,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   properties: any[] = [];
   loading: boolean = true;
 
-  // KPIs
   totalLeads: number = 0;
   priorityLeadsCount: number = 0;
   totalArea: number = 0;
 
-  // Gráficos
   statusChartData: any;
   statusChartOptions: any;
   cityChartData: any;
   cityChartOptions: any;
 
-  // Listas
   priorityLeadsList: any[] = [];
   statusSummary: any = {};
 
@@ -74,7 +71,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
         this.calculateKPIs();
 
-        // Só configura gráficos se tiver leads
         if (this.leads.length > 0) {
           this.setupCharts();
           this.filterLists();
@@ -83,7 +79,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.cdr.detectChanges();
 
-        // Só inicia mapa se tiver propriedades
         if (this.properties.length > 0) {
           this.initMap();
         }
@@ -91,7 +86,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ... (calculateKPIs e filterLists mantidos iguais) ...
+  getStatusBadgeClass(status: string): string {
+    switch (status) {
+      case 'Novo': return 'bg-blue-100 text-blue-700';
+      case 'Contato Inicial': return 'bg-cyan-100 text-cyan-700';
+      case 'Em Negociação': return 'bg-yellow-100 text-yellow-700';
+      case 'Convertido': return 'bg-green-100 text-green-700';
+      case 'Perdido': return 'bg-red-100 text-red-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  }
+
   calculateKPIs() {
     this.totalLeads = this.leads.length;
     this.priorityLeadsCount = this.leads.filter(l => l.isPriority).length;
@@ -113,7 +118,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   setupCharts() {
-    // ... (código dos gráficos igual ao anterior) ...
+
     const statusCounts = [
       this.leads.filter(l => l.status === 'Novo').length,
       this.leads.filter(l => l.status === 'Contato Inicial').length,
@@ -154,7 +159,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   initChartOptions() {
-    // ... (código igual) ...
+
     this.statusChartOptions = {
       cutout: '60%',
       plugins: { legend: { position: 'bottom', labels: { usePointStyle: true } } }

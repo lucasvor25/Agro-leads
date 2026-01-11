@@ -6,7 +6,8 @@ import {
     IsOptional,
     IsNotEmpty,
     Min,
-    Length
+    Length,
+    IsBoolean
 } from 'class-validator';
 
 export class CreateLeadDto {
@@ -51,4 +52,8 @@ export class CreateLeadDto {
     @IsString()
     @IsOptional()
     obs?: string;
+
+    @IsOptional()
+    @IsBoolean()
+    isPriority?: boolean;
 }

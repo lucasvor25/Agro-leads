@@ -1,0 +1,110 @@
+:host ::ng-deep .grid {
+  row-gap: 1.25rem;
+}
+
+.surface-card {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease;
+}
+
+.surface-card:hover {
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+}
+
+:host ::ng-deep .p-button.p-button-danger.p-button-text {
+  color: #ef4444 !important;
+}
+
+.area-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f3f4f6;
+  padding: 0.25rem 0.7rem;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.75rem;
+}
+
+.surface-border {
+  border-color: #f3f4f6 !important;
+}
+
+:host ::ng-deep .p-paginator {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  padding: 0.5rem;
+  justify-content: center;
+  border: none;
+}
+
+.surface-card .text-lg {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.surface-card .text-green-800 {
+  color: #065f46;
+  font-weight: 600;
+}
+
+.surface-card .text-500 {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+:host ::ng-deep .p-tag {
+  border-radius: 6px;
+  font-size: 0.7rem;
+  padding: 0.25rem 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+:host ::ng-deep .p-button-success {
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.empty-state-container {
+  background: #ffffff;
+  border: 1px dashed #e5e7eb;
+  border-radius: 12px;
+  padding: 5rem 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.empty-state-content {
+  text-align: center;
+}
+
+.empty-state-content i {
+  font-size: 2.5rem;
+  color: #9ca3af;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state-content h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state-content p {
+  color: #6b7280;
+  font-size: 0.95rem;
+}

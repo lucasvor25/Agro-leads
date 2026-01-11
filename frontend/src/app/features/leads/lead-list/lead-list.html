@@ -1,0 +1,123 @@
+<div class="p-4 fadein animation-duration-500 leads-page">
+  <div class="mb-5 flex align-items-center justify-content-between">
+    <div>
+      <h1 class="text-3xl font-bold m-0 text-900 font-serif">Leads</h1>
+      <span class="text-gray-500 font-medium">{{ leads.length }} leads encontrados</span>
+    </div>
+
+    <button
+      pButton
+      label="Criar Lead"
+      icon="pi pi-plus"
+      class="p-button-success border-round-lg shadow-1 px-4 py-2 font-bold"
+      (click)="openNewLeadModal()"
+    ></button>
+  </div>
+
+  <app-lead-filter
+    [leadsData]="leads"
+    (filterChange)="handleFilterChange($event)"
+  ></app-lead-filter>
+  <app-lead-create (onSave)="onLeadCreated()"></app-lead-create>
+
+  <div class="grid mt-5" *ngIf="leads.length > 0">
+    <div class="col-12 md:col-6 lg:col-4 xl:col-3" *ngFor="let lead of visibleLeads">
+      <div
+        (click)="viewDetails(lead.id)"
+        class="lead-card cursor-pointer h-full flex flex-column relative"
+        [ngClass]="{ 'is-priority': lead.isPriority }"
+      >
+        <div class="flex justify-content-between align-items-start mb-3">
+          <div class="flex flex-column gap-1" style="max-width: 85%">
+            <span
+              class="lead-name white-space-nowrap overflow-hidden text-overflow-ellipsis"
+              style="max-width: 100%"
+              pTooltip="{{ lead.name }}"
+              tooltipPosition="top"
+            >
+              {{ lead.name }}
+            </span>
+            <span
+              class="text-500 text-sm font-medium flex align-items-center gap-1"
+              *ngIf="lead.cpf"
+            >
+              <i class="pi pi-id-card text-xs"></i> {{ lead.cpf }}
+            </span>
+          </div>
+
+          <div class="flex gap-1 -mt-1 -mr-2">
+            <button
+              pButton
+              type="button"
+              icon="pi pi-pencil"
+              class="p-button-rounded p-button-text p-button-secondary"
+              (click)="editLead(lead, $event)"
+              pTooltip="Editar"
+            ></button>
+            <button
+              pButton
+              type="button"
+              icon="pi pi-trash"
+              class="p-button-rounded p-button-text p-button-danger"
+              (click)="deleteLead(lead, $event)"
+              pTooltip="Excluir"
+            ></button>
+          </div>
+        </div>
+
+        <div class="flex flex-column gap-3 mb-4">
+          <div class="flex align-items-center gap-2">
+            <div class="icon-circle flex-shrink-0"><i class="pi pi-map-marker"></i></div>
+            <span class="text-700 font-medium text-sm">{{ lead.city }}</span>
+          </div>
+
+          <div class="flex align-items-center gap-2">
+            <div class="icon-circle flex-shrink-0"><i class="pi pi-phone"></i></div>
+            <span class="text-700 font-medium text-sm">{{ lead.phone }}</span>
+          </div>
+
+          <div class="flex align-items-center gap-2">
+            <div class="icon-circle flex-shrink-0"><i class="pi pi-envelope"></i></div>
+            <span class="text-700 font-medium text-sm truncate" pTooltip="{{ lead.email }}">{{
+              lead.email
+            }}</span>
+          </div>
+
+          <div class="flex align-items-center gap-1">
+            <p-tag [value]="lead.status" [severity]="getStatusSeverity(lead.status)"></p-tag>
+          </div>
+        </div>
+
+        <div
+          class="flex align-items-center justify-content-between text-xs mt-auto pt-3 border-top-1 surface-border"
+        >
+          <div class="area-pill">
+            <i class="pi pi-box"></i>
+            <span>{{ lead.area }} ha</span>
+          </div>
+
+          <div class="flex flex-column align-items-end gap-1">
+            <span class="text-500 flex align-items-center gap-1" pTooltip="Data de Criação">
+              <i class="pi pi-calendar"></i> {{ lead.createdAt | date : 'dd/MM/yy' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p-paginator
+    *ngIf="leads.length > 0"
+    [first]="first"
+    [rows]="rows"
+    [totalRecords]="leads.length"
+    [rowsPerPageOptions]="[12, 24, 48]"
+    (onPageChange)="onPageChange($event)"
+  ></p-paginator>
+
+  <div *ngIf="leads.length === 0" class="empty-state mt-5">
+    <i class="pi pi-search"></i>
+    <h3>Nenhum lead encontrado</h3>
+    <p>Não encontramos resultados para sua busca. Tente ajustar os filtros.</p>
+  </div>
+</div>

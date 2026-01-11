@@ -1,31 +1,211 @@
-/* dashboard.css */
-
-:host ::ng-deep .dashboard-marker {
-    /* --- TAMANHO DO PIN --- */
-    width: 12px;  /* Reduzi de 28px para 12px (ficam pontinhos delicados) */
-    height: 12px; /* Mantenha igual à largura para ser um círculo */
-    
-    border-radius: 50%;
-    
-    /* Sombra suave para destacar do mapa */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-    
-    /* Centralização do ícone (se houver) */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    
-    /* Suavidade ao passar o mouse */
-    transition: transform 0.2s ease, width 0.2s, height 0.2s;
+.surface-card {
+  background: #ffffff;
+  border-radius: 20px;
 }
 
-/* Efeito ao passar o mouse (Aumenta um pouco) */
-:host ::ng-deep .dashboard-marker:hover {
-    transform: scale(1.3); 
-    z-index: 10; /* Garante que fique por cima dos outros */
+.shadow-1 {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
 }
 
 .font-serif {
-    font-family: 'Merriweather', 'Georgia', serif;
+  font-family: 'Merriweather', 'Georgia', serif;
+}
+
+.text-900 {
+  color: #1f2937 !important;
+}
+
+.text-600 {
+  color: #6b7280 !important;
+}
+
+.text-500 {
+  color: #9ca3af !important;
+}
+
+.surface-card > div > .text-4xl {
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.surface-card span.text-sm {
+  letter-spacing: 0.4px;
+}
+
+.bg-green-800 {
+  background: rgba(16, 185, 129, 0.14) !important;
+  color: #065f46 !important;
+  border-radius: 16px;
+}
+
+.bg-yellow-500 {
+  background: rgba(245, 158, 11, 0.18) !important;
+  color: #92400e !important;
+  border-radius: 16px;
+}
+
+.surface-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+
+p-chart {
+  display: block;
+}
+
+.relative {
+  background: #f9fafb;
+  border-radius: 24px;
+  padding: 0.5rem;
+}
+
+#dashboard-map {
+  border-radius: 18px;
+}
+
+:host ::ng-deep .dashboard-marker {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease;
+}
+
+:host ::ng-deep .dashboard-marker:hover {
+  transform: scale(1.5);
+  z-index: 20;
+}
+
+.surface-card.cursor-pointer {
+  border-radius: 22px;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.surface-card.cursor-pointer:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+  background: #ffffff;
+}
+
+.border-left-3 {
+  border-left-width: 3px !important;
+  border-left-color: #facc15 !important;
+}
+
+.surface-card .text-xl {
+  font-size: 1.15rem !important;
+  font-weight: 700;
+}
+
+.surface-card .text-sm.text-600 {
+  font-size: 0.82rem;
+  margin-top: 0.3rem;
+}
+
+.surface-card .bg-yellow-50 {
+  background: transparent !important;
+  padding: 0 !important;
+  margin-top: 1.25rem;
+}
+
+.text-yellow-700 {
+  background: #fff2cc;
+  color: #92400e !important;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.text-xl.font-bold.text-500 {
+  font-size: 0.95rem !important;
+  font-weight: 600;
+  color: #374151 !important;
+}
+
+.surface-card.p-4 > .grid.text-center {
+  gap: 1rem;
+}
+
+.surface-card.p-4 > .grid.text-center .col {
+  background: #faf7f2;
+  border-radius: 18px;
+  padding: 1.4rem 0.5rem;
+}
+
+.border-left-1 {
+  border-left: none !important;
+}
+
+.grid.text-center .text-3xl {
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+
+.text-agro-gold {
+  color: #f59e0b !important;
+}
+
+.grid.text-center .text-sm {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.bg-blue-100 {
+  background-color: #dbeafe !important;
+}
+.text-blue-700 {
+  color: #1d4ed8 !important;
+}
+
+.bg-cyan-100 {
+  background-color: #cffafe !important;
+}
+.text-cyan-700 {
+  color: #0e7490 !important;
+}
+
+.bg-yellow-100 {
+  background-color: #fef9c3 !important;
+}
+.text-yellow-700 {
+  color: #a16207 !important;
+}
+
+.bg-green-100 {
+  background-color: #dcfce7 !important;
+}
+.text-green-700 {
+  color: #15803d !important;
+}
+
+.bg-red-100 {
+  background-color: #fee2e2 !important;
+}
+.text-red-700 {
+  color: #b91c1c !important;
+}
+
+@media (max-width: 768px) {
+  .text-4xl {
+    font-size: 2rem !important;
+  }
+
+  .surface-card {
+    padding: 1.25rem !important;
+  }
+
+  .surface-card.cursor-pointer {
+    padding: 1.25rem !important;
+  }
+
+  .grid.text-center .col {
+    padding: 1rem;
+  }
 }

@@ -5,7 +5,7 @@ export class GetLeadsFilterDto {
 
     @IsOptional()
     @IsString()
-    @Transform(({ value }) => value?.trim()) // Remove espaços acidentais da busca
+    @Transform(({ value }) => value?.trim())
     search?: string;
 
     @IsOptional()

@@ -1,150 +1,200 @@
 <p-toast></p-toast>
 
-<p-dialog 
-    header="Nova Propriedade" 
-    [(visible)]="visible" 
-    [modal]="true" 
-    [style]="{width: '60vw', height: '85vh'}" 
-    [breakpoints]="{'960px': '95vw'}"
-    [draggable]="false" 
-    [resizable]="false"
-    [focusOnShow]="false"
-    >
-    
-   <div *ngIf="step === 1" class="p-fluid grid formgrid">
-        
-        <div class="field col-12">
-            <label class="font-bold text-900">Lead (Proprietário) *</label>
-            <p-autoComplete 
-                [(ngModel)]="newProperty.lead" 
-                [suggestions]="filteredLeads" 
-                (completeMethod)="filterLead($event)" 
-                field="name" 
-                [dropdown]="true" 
-                [completeOnFocus]="true"
-                placeholder="Selecione ou digite..."
-                [forceSelection]="true"
-                appendTo="body">
-                
-                <ng-template let-lead pTemplate="item">
-                    <div>{{ lead.name }}</div>
-                </ng-template>
-            </p-autoComplete>
-        </div>
-
-        <div class="field col-12">
-            <label class="font-bold text-900">Nome da Propriedade *</label>
-            <input pInputText [(ngModel)]="newProperty.name" placeholder="Ex: Fazenda Santa Clara" class="w-full"/>
-        </div>
-
-        <div class="field col-12 md:col-6">
-            <label class="font-bold text-900">Município (MG) *</label>
-            <p-autoComplete 
-                [(ngModel)]="newProperty.city" 
-                [suggestions]="filteredCities" 
-                (completeMethod)="filterCity($event)" 
-                field="label" 
-                [dropdown]="true" 
-                [completeOnFocus]="true"
-                placeholder="Selecione ou digite..."
-                [forceSelection]="true"
-                appendTo="body">
-            </p-autoComplete>
-        </div>
-
-        <div class="field col-12 md:col-6">
-            <label class="font-bold text-900">Cultura Principal *</label>
-            <p-dropdown 
-                [options]="cultureOptions" 
-                [(ngModel)]="newProperty.culture" 
-                placeholder="Selecione..."
-                optionLabel="label"
-                optionValue="value"
-                styleClass="w-full"
-                appendTo="body">
-            </p-dropdown>
-        </div>
-
-        <div class="field col-12">
-            <label class="font-medium text-900">Observações</label>
-            <textarea pInputTextarea [(ngModel)]="newProperty.obs" rows="3" placeholder="Informações adicionais..." class="w-full"></textarea>
-        </div>
+<p-dialog
+  header="Nova Propriedade"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '60vw', height: '85vh' }"
+  [breakpoints]="{ '960px': '95vw' }"
+  [draggable]="false"
+  [resizable]="false"
+  [focusOnShow]="false"
+>
+  <div *ngIf="step === 1" class="p-fluid grid formgrid">
+    <div class="field col-12">
+      <label class="font-bold text-900">Lead (Proprietário) *</label>
+      <p-autoComplete
+        [(ngModel)]="newProperty.lead"
+        [suggestions]="filteredLeads"
+        (completeMethod)="filterLead($event)"
+        field="name"
+        [dropdown]="true"
+        [completeOnFocus]="true"
+        placeholder="Selecione ou digite..."
+        [forceSelection]="true"
+        appendTo="body"
+      >
+        <ng-template let-lead pTemplate="item">
+          <div>{{ lead.name }}</div>
+        </ng-template>
+      </p-autoComplete>
     </div>
 
-    <div *ngIf="step === 2" class="flex flex-column h-full">
-        
-        <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-3 gap-3">
-            
-            <p-selectButton 
-                [options]="mapModeOptions" 
-                [(ngModel)]="selectedMapMode" 
-                (onChange)="changeMode($event)"
-                optionLabel="label" 
-                optionValue="value">
-            </p-selectButton>
-
-            <div *ngIf="selectedMapMode === 'pin'" class="flex align-items-center gap-2 bg-yellow-50 p-2 border-round border-1 border-yellow-200">
-    <span class="font-bold text-900">Área Total:</span>
-    
-            <div class="p-inputgroup w-10rem">
-                <p-inputNumber 
-                [(ngModel)]="manualAreaInput" 
-                (onInput)="onAreaManualInput()" 
-                [min]="0" 
-                [maxFractionDigits]="2" 
-                placeholder="0.00" 
-                inputStyleClass="text-right">
-                </p-inputNumber>
-        <span class="p-inputgroup-addon">ha</span>
-            </div>
-            <i class="pi pi-info-circle text-yellow-600" pTooltip="Digite a área para ver o raio no mapa" tooltipPosition="top"></i>
-            </div>
-
-            <div *ngIf="selectedMapMode === 'draw'" class="bg-gray-100 p-2 border-round border-1 border-gray-300 flex align-items-center gap-2">
-                <span class="font-bold text-gray-700">Área Desenhada: </span>
-                <span class="text-xl font-bold text-green-600">{{ newProperty.area || 0 }} ha</span>
-            </div>
-        </div>
-
-        <div id="map-create" class="shadow-2 relative w-full flex-grow-1 border-round-xl overflow-hidden" style="min-height: 400px;">
-            </div>
-
-        <div class="mt-3 flex align-items-center justify-content-center h-2rem">
-            
-            <div *ngIf="isValidGeometry" class="text-green-600 font-bold flex align-items-center gap-2 fadein animation-duration-300">
-                <i class="pi pi-check-circle text-xl"></i>
-                <span>Área definida com sucesso! ({{ newProperty.area }} ha)</span>
-            </div>
-
-            <div *ngIf="!isValidGeometry && selectedMapMode === 'draw'" class="text-gray-500 text-sm flex align-items-center gap-2">
-                <i class="pi pi-pencil"></i> Use as ferramentas no mapa para desenhar o talhão.
-            </div>
-
-            <div *ngIf="!isValidGeometry && selectedMapMode === 'pin'" class="text-gray-500 text-sm flex align-items-center gap-2">
-                <i class="pi pi-map-marker"></i> Marque o local no mapa E informe a área acima.
-            </div>
-        </div>
+    <div class="field col-12">
+      <label class="font-bold text-900">Nome da Propriedade *</label>
+      <input
+        pInputText
+        [(ngModel)]="newProperty.name"
+        placeholder="Ex: Fazenda Santa Clara"
+        class="w-full"
+      />
     </div>
 
-    <ng-template pTemplate="footer">
-        
-        <div *ngIf="step === 1" class="flex justify-content-end gap-2">
-            <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="close()"></button>
-            <button pButton label="Próximo" icon="pi pi-arrow-right" iconPos="right" (click)="nextStep()" [disabled]="!isStep1Valid"></button>
-        </div>
+    <div class="field col-12 md:col-6">
+      <label class="font-bold text-900">Município (MG) *</label>
+      <p-autoComplete
+        [(ngModel)]="newProperty.city"
+        [suggestions]="filteredCities"
+        (completeMethod)="filterCity($event)"
+        field="label"
+        [dropdown]="true"
+        [completeOnFocus]="true"
+        placeholder="Selecione ou digite..."
+        [forceSelection]="true"
+        appendTo="body"
+      >
+      </p-autoComplete>
+    </div>
 
-        <div *ngIf="step === 2" class="flex justify-content-between w-full">
-            <button pButton label="Voltar" icon="pi pi-arrow-left" class="p-button-text" (click)="prevStep()"></button>
-            
-            <button pButton 
-                label="Criar Propriedade" 
-                icon="pi pi-check" 
-                class="p-button-success" 
-                (click)="save()" 
-                [disabled]="!isValidGeometry || loading" 
-                [loading]="loading">
-            </button>
-        </div>
-    </ng-template>
+    <div class="field col-12 md:col-6">
+      <label class="font-bold text-900">Cultura Principal *</label>
+      <p-dropdown
+        [options]="cultureOptions"
+        [(ngModel)]="newProperty.culture"
+        placeholder="Selecione..."
+        optionLabel="label"
+        optionValue="value"
+        styleClass="w-full"
+        appendTo="body"
+      >
+      </p-dropdown>
+    </div>
 
+    <div class="field col-12">
+      <label class="font-medium text-900">Observações</label>
+      <textarea
+        pInputTextarea
+        [(ngModel)]="newProperty.obs"
+        rows="3"
+        placeholder="Informações adicionais..."
+        class="w-full"
+      ></textarea>
+    </div>
+  </div>
+
+  <div *ngIf="step === 2" class="flex flex-column h-full">
+    <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-3 gap-3">
+      <p-selectButton
+        [options]="mapModeOptions"
+        [(ngModel)]="selectedMapMode"
+        (onChange)="changeMode($event)"
+        optionLabel="label"
+        optionValue="value"
+      >
+      </p-selectButton>
+
+      <div
+        *ngIf="selectedMapMode === 'pin'"
+        class="flex align-items-center gap-2 bg-yellow-50 p-2 border-round border-1 border-yellow-200"
+      >
+        <span class="font-bold text-900">Área Total:</span>
+
+        <div class="p-inputgroup w-10rem">
+          <p-selectButton
+            [options]="mapModeOptions"
+            [(ngModel)]="selectedMapMode"
+            (onChange)="changeMode($event)"
+            optionLabel="label"
+            optionValue="value"
+            styleClass="custom-select-button"
+          >
+          </p-selectButton>
+          <span class="p-inputgroup-addon">ha</span>
+        </div>
+        <i
+          class="pi pi-info-circle text-yellow-600"
+          pTooltip="Digite a área para ver o raio no mapa"
+          tooltipPosition="top"
+        ></i>
+      </div>
+
+      <div
+        *ngIf="selectedMapMode === 'draw'"
+        class="bg-white p-2 border-round-lg border-1 border-300 flex align-items-center gap-2 shadow-1"
+      >
+        <span class="font-bold text-700">Área Desenhada: </span>
+        <span class="text-xl font-bold text-green-600">{{ newProperty.area || 0 }} ha</span>
+      </div>
+    </div>
+
+    <div
+      id="map-create"
+      class="shadow-2 relative w-full flex-grow-1 border-round-xl overflow-hidden"
+      style="min-height: 400px"
+    ></div>
+
+    <div class="mt-3 flex align-items-center justify-content-center h-2rem">
+      <div
+        *ngIf="isValidGeometry"
+        class="text-green-600 font-bold flex align-items-center gap-2 fadein animation-duration-300"
+      >
+        <i class="pi pi-check-circle text-xl"></i>
+        <span>Área definida com sucesso! ({{ newProperty.area }} ha)</span>
+      </div>
+
+      <div
+        *ngIf="!isValidGeometry && selectedMapMode === 'draw'"
+        class="text-gray-500 text-sm flex align-items-center gap-2"
+      >
+        <i class="pi pi-pencil"></i> Use as ferramentas no mapa para desenhar o talhão.
+      </div>
+
+      <div
+        *ngIf="!isValidGeometry && selectedMapMode === 'pin'"
+        class="text-gray-500 text-sm flex align-items-center gap-2"
+      >
+        <i class="pi pi-map-marker"></i> Marque o local no mapa E informe a área acima.
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div *ngIf="step === 1" class="flex justify-content-end gap-2">
+      <button
+        pButton
+        label="Cancelar"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="close()"
+      ></button>
+      <button
+        pButton
+        label="Próximo"
+        icon="pi pi-arrow-right"
+        iconPos="right"
+        (click)="nextStep()"
+        [disabled]="!isStep1Valid"
+      ></button>
+    </div>
+
+    <div *ngIf="step === 2" class="flex justify-content-between w-full">
+      <button
+        pButton
+        label="Voltar"
+        icon="pi pi-arrow-left"
+        class="p-button-text"
+        (click)="prevStep()"
+      ></button>
+
+      <button
+        pButton
+        label="Criar Propriedade"
+        icon="pi pi-check"
+        class="p-button-success"
+        (click)="save()"
+        [disabled]="!isValidGeometry || loading"
+        [loading]="loading"
+      ></button>
+    </div>
+  </ng-template>
 </p-dialog>

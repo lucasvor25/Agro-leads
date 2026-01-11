@@ -1,145 +1,219 @@
 <div class="p-4 fadein animation-duration-500">
+  <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-5 gap-3">
+    <div>
+      <h1 class="text-3xl font-bold m-0 text-900 font-serif">Dashboard</h1>
+      <span class="text-600">Visão geral da sua carteira de leads</span>
+    </div>
+  </div>
 
-    <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-5 gap-3">
-        <div>
-            <h1 class="text-3xl font-bold m-0 text-900 font-serif">Dashboard</h1>
-            <span class="text-600">Visão geral da sua carteira de leads</span>
+  <div *ngIf="leads.length > 0; else emptyState">
+    <div class="grid mb-4">
+      <div class="col-12 md:col-4">
+        <div
+          class="surface-card p-4 border-round-xl shadow-1 h-full flex justify-content-between align-items-start"
+        >
+          <div>
+            <span class="text-500 font-medium text-sm">Total de Leads</span>
+            <div class="text-900 font-bold text-4xl mt-2">{{ totalLeads }}</div>
+            <span class="text-xs text-500 mt-2 block">Cadastrados no sistema</span>
+          </div>
+          <div
+            class="bg-green-800 text-white border-round p-2 flex align-items-center justify-content-center"
+            style="width: 48px; height: 48px"
+          >
+            <i class="pi pi-users text-xl"></i>
+          </div>
         </div>
+      </div>
+      <div class="col-12 md:col-4">
+        <div
+          class="surface-card p-4 border-round-xl shadow-1 h-full flex justify-content-between align-items-start"
+        >
+          <div>
+            <span class="text-500 font-medium text-sm">Leads Prioritários</span>
+            <div class="text-900 font-bold text-4xl mt-2">{{ priorityLeadsCount }}</div>
+            <span class="text-xs text-500 mt-2 block">Área > 100 hectares</span>
+          </div>
+          <div
+            class="bg-yellow-500 text-white border-round p-2 flex align-items-center justify-content-center"
+            style="width: 48px; height: 48px"
+          >
+            <i class="pi pi-star-fill text-xl"></i>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 md:col-4">
+        <div
+          class="surface-card p-4 border-round-xl shadow-1 h-full flex justify-content-between align-items-start"
+        >
+          <div>
+            <span class="text-500 font-medium text-sm">Área Total</span>
+            <div class="text-900 font-bold text-4xl mt-2">
+              {{ totalArea | number : '1.0-0' }} ha
+            </div>
+            <span class="text-xs text-500 mt-2 block">Sob prospecção</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div *ngIf="leads.length > 0; else emptyState">
-
-        <div class="grid mb-4">
-            <div class="col-12 md:col-4">
-                <div class="surface-card p-4 border-round-xl shadow-1 h-full flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-500 font-medium text-sm">Total de Leads</span>
-                        <div class="text-900 font-bold text-4xl mt-2">{{ totalLeads }}</div>
-                        <span class="text-xs text-500 mt-2 block">Cadastrados no sistema</span>
-                    </div>
-                    <div class="bg-green-800 text-white border-round p-2 flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-                        <i class="pi pi-users text-xl"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 md:col-4">
-                <div class="surface-card p-4 border-round-xl shadow-1 h-full flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-500 font-medium text-sm">Leads Prioritários</span>
-                        <div class="text-900 font-bold text-4xl mt-2">{{ priorityLeadsCount }}</div>
-                        <span class="text-xs text-500 mt-2 block">Área > 100 hectares</span>
-                    </div>
-                    <div class="bg-yellow-500 text-white border-round p-2 flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
-                        <i class="pi pi-star-fill text-xl"></i>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 md:col-4">
-                <div class="surface-card p-4 border-round-xl shadow-1 h-full flex justify-content-between align-items-start">
-                    <div>
-                        <span class="text-500 font-medium text-sm">Área Total</span>
-                        <div class="text-900 font-bold text-4xl mt-2">{{ totalArea | number:'1.0-0' }} ha</div>
-                        <span class="text-xs text-500 mt-2 block">Sob prospecção</span>
-                    </div>
-                </div>
-            </div>
+    <div class="grid mb-4">
+      <div class="col-12 md:col-5">
+        <div class="surface-card p-4 border-round-xl shadow-1 h-full">
+          <h3 class="text-lg font-bold text-900 mb-4 font-serif">Leads por Status</h3>
+          <div class="flex justify-content-center" style="height: 250px">
+            <p-chart
+              type="doughnut"
+              [data]="statusChartData"
+              [options]="statusChartOptions"
+              width="100%"
+              height="250px"
+            ></p-chart>
+          </div>
         </div>
-
-        <div class="grid mb-4">
-            <div class="col-12 md:col-5">
-                <div class="surface-card p-4 border-round-xl shadow-1 h-full">
-                    <h3 class="text-lg font-bold text-900 mb-4 font-serif">Leads por Status</h3>
-                    <div class="flex justify-content-center" style="height: 250px;">
-                        <p-chart type="doughnut" [data]="statusChartData" [options]="statusChartOptions" width="100%" height="250px"></p-chart>
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 md:col-7">
-                <div class="surface-card p-4 border-round-xl shadow-1 h-full">
-                    <h3 class="text-lg font-bold text-900 mb-4 font-serif">Leads por Município</h3>
-                    <div style="height: 250px;">
-                        <p-chart type="bar" [data]="cityChartData" [options]="cityChartOptions" width="100%" height="250px"></p-chart>
-                    </div>
-                </div>
-            </div>
+      </div>
+      <div class="col-12 md:col-7">
+        <div class="surface-card p-4 border-round-xl shadow-1 h-full">
+          <h3 class="text-lg font-bold text-900 mb-4 font-serif">Leads por Município</h3>
+          <div style="height: 250px">
+            <p-chart
+              type="bar"
+              [data]="cityChartData"
+              [options]="cityChartOptions"
+              width="100%"
+              height="250px"
+            ></p-chart>
+          </div>
         </div>
-
-        <div class="mb-5" *ngIf="properties.length > 0">
-            <div class="surface-card p-4 border-round-xl shadow-1">
-                <div class="flex justify-content-between align-items-center mb-3">
-                    <h3 class="text-lg font-bold text-900 m-0 font-serif flex align-items-center gap-2">
-                        <i class="pi pi-map"></i> Mapa de Propriedades
-                    </h3>
-                    <span class="text-sm cursor-pointer hover:underline text-900 font-bold" [routerLink]="['/properties']">Ver todas ></span>
-                </div>
-                
-                <div class="relative w-full h-20rem bg-gray-100 border-round overflow-hidden">
-                    <div id="dashboard-map" style="width: 100%; height: 100%;"></div>
-                </div>
-            </div>
-        </div>
-
-        <div class="mb-5">
-            <div class="flex justify-content-between align-items-center mb-3">
-                <h3 class="text-lg font-bold text-900 m-0 font-serif text-yellow-600 flex align-items-center gap-2">
-                    <i class="pi pi-star"></i> Leads Prioritários em Aberto
-                </h3>
-                <span class="text-sm cursor-pointer hover:underline text-900 font-bold" [routerLink]="['/leads']">Ver todos ></span>
-            </div>
-
-            <div class="grid">
-                <div class="col-12 md:col-4" *ngFor="let lead of priorityLeadsList">
-                    <div class="surface-card p-3 border-round-xl shadow-1 h-full cursor-pointer hover:surface-50 transition-colors border-left-3 border-yellow-500" (click)="goToLead(lead.id)">
-                        <div class="flex align-items-center gap-2 mb-2">
-                            <i class="pi pi-star-fill text-yellow-500"></i>
-                            <span class="font-bold text-xl text-900">{{ lead.name }}</span>
-                        </div>
-                        <div class="text-sm text-600 mb-1"><i class="pi pi-map-marker mr-1"></i> {{ lead.city }}</div>
-                        <div class="text-sm text-600 mb-3"><i class="pi pi-phone mr-1"></i> {{ lead.phone }}</div>
-                        <div class="flex justify-content-between align-items-center mt-3 bg-yellow-50 p-2 border-round">
-                            <div class="text-right flex align-items-center">
-                                 <span class="block text-xl font-bold text-900">Status:</span>
-                                <span class="text-xs font-bold text-yellow-700 uppercase">{{ lead.status }}</span>
-                            </div>
-                            
-                            <div class="text-right flex align-items-center">
-                                 <span class="block text-xl font-bold text-900">Área Total:</span>
-                                <span class="text-xl font-bold text-500">{{ lead.area }} ha</span>
-                               
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-12" *ngIf="priorityLeadsList.length === 0">
-                    <div class="text-center p-4 text-500 surface-card border-round">Nenhum lead prioritário em aberto.</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="surface-card p-4 border-round-xl shadow-1">
-            <h3 class="text-lg font-bold text-900 mb-4 font-serif">Resumo por Status</h3>
-            <div class="grid text-center">
-                <div class="col"><div class="text-3xl font-bold text-900">{{ statusSummary['Novo'] || 0 }}</div><div class="text-sm text-500">Novo</div></div>
-                <div class="col border-left-1 border-gray-200"><div class="text-3xl font-bold text-900">{{ statusSummary['Contato Inicial'] || 0 }}</div><div class="text-sm text-500">Contato Inicial</div></div>
-                <div class="col border-left-1 border-gray-200"><div class="text-3xl font-bold text-900">{{ statusSummary['Em Negociação'] || 0 }}</div><div class="text-sm text-500">Em Negociação</div></div>
-                <div class="col border-left-1 border-gray-200"><div class="text-3xl font-bold text-900">{{ statusSummary['Convertido'] || 0 }}</div><div class="text-sm text-500">Convertido</div></div>
-                <div class="col border-left-1 border-gray-200"><div class="text-3xl font-bold text-900">{{ statusSummary['Perdido'] || 0 }}</div><div class="text-sm text-500">Perdido</div></div>
-            </div>
-        </div>
-
+      </div>
     </div>
 
-    <ng-template #emptyState>
-        <div class="surface-card p-6 border-round-2xl shadow-2 text-center mt-4">
-            <div class="bg-green-50 border-circle p-4 inline-flex align-items-center justify-content-center mb-4" style="width: 80px; height: 80px;">
-                <i class="pi pi-chart-bar text-green-600 text-4xl"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-900 mb-2">Nenhum dado encontrado</h2>
-            <p class="text-600 line-height-3 mb-5 max-w-30rem mx-auto">
-                Parece que você ainda não tem leads ou propriedades cadastrados. Comece adicionando seus primeiros contatos para ver o dashboard ganhar vida!
-            </p>
-            <button pButton label="Cadastrar Primeiro Lead" icon="pi pi-plus" class="p-button-success p-button-lg" (click)="createLead()"></button>
+    <div class="mb-5" *ngIf="properties.length > 0">
+      <div class="surface-card p-4 border-round-xl shadow-1">
+        <div class="flex justify-content-between align-items-center mb-3">
+          <h3 class="text-lg font-bold text-900 m-0 font-serif flex align-items-center gap-2">
+            <i class="pi pi-map"></i> Mapa de Propriedades
+          </h3>
+          <span
+            class="text-sm cursor-pointer hover:underline text-900 font-bold"
+            [routerLink]="['/properties']"
+            >Ver todas ></span
+          >
         </div>
-    </ng-template>
 
+        <div class="relative w-full h-20rem bg-gray-100 border-round overflow-hidden">
+          <div id="dashboard-map" style="width: 100%; height: 100%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-5">
+      <div class="flex justify-content-between align-items-center mb-3">
+        <h3 class="text-lg font-bold text-900 m-0 font-serif flex align-items-center gap-2">
+          <i class="pi pi-star text-agro-gold text-xl"></i>
+          Leads Prioritários em Aberto
+        </h3>
+        <span
+          class="text-sm cursor-pointer hover:underline text-900 font-bold"
+          [routerLink]="['/leads']"
+          >Ver todos ></span
+        >
+      </div>
+
+      <div class="grid">
+        <div class="col-12 md:col-4" *ngFor="let lead of priorityLeadsList">
+          <div
+            class="surface-card p-3 border-round-xl shadow-1 h-full cursor-pointer hover:shadow-3 transition-all border-none hover:border-yellow-500"
+            (click)="goToLead(lead.id)"
+          >
+            <div class="flex align-items-center gap-2 mb-2">
+              <i class="pi pi-star-fill text-agro-gold text-xl"></i>
+              <span class="font-bold text-xl text-900">{{ lead.name }}</span>
+            </div>
+            <div class="text-sm text-600 mb-1">
+              <i class="pi pi-map-marker mr-1"></i> {{ lead.city }}
+            </div>
+            <div class="text-sm text-600 mb-3">
+              <i class="pi pi-phone mr-1"></i> {{ lead.phone }}
+            </div>
+
+            <div
+              class="flex justify-content-between align-items-center mt-3 p-3 border-round-lg"
+              style="background-color: #f9fafb"
+            >
+              <div>
+                <span class="text-xs font-bold text-500 block mb-1">STATUS</span>
+
+                <span
+                  class="text-xs font-bold uppercase px-2 py-1 border-round"
+                  [ngClass]="getStatusBadgeClass(lead.status)"
+                >
+                  {{ lead.status }}
+                </span>
+              </div>
+
+              <div class="text-right">
+                <span class="text-xs font-bold text-500 block mb-1">ÁREA</span>
+                <span class="text-lg font-bold text-900">{{ lead.area }} ha</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-12" *ngIf="priorityLeadsList.length === 0">
+          <div class="text-center p-4 text-500 surface-card border-round">
+            Nenhum lead prioritário em aberto.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="surface-card p-4 border-round-xl shadow-1">
+      <h3 class="text-lg font-bold text-900 mb-4 font-serif">Resumo por Status</h3>
+      <div class="grid text-center">
+        <div class="col">
+          <div class="text-3xl font-bold text-900">{{ statusSummary['Novo'] || 0 }}</div>
+          <div class="text-sm text-500">Novo</div>
+        </div>
+        <div class="col border-left-1 border-gray-200">
+          <div class="text-3xl font-bold text-900">{{ statusSummary['Contato Inicial'] || 0 }}</div>
+          <div class="text-sm text-500">Contato Inicial</div>
+        </div>
+        <div class="col border-left-1 border-gray-200">
+          <div class="text-3xl font-bold text-900">{{ statusSummary['Em Negociação'] || 0 }}</div>
+          <div class="text-sm text-500">Em Negociação</div>
+        </div>
+        <div class="col border-left-1 border-gray-200">
+          <div class="text-3xl font-bold text-900">{{ statusSummary['Convertido'] || 0 }}</div>
+          <div class="text-sm text-500">Convertido</div>
+        </div>
+        <div class="col border-left-1 border-gray-200">
+          <div class="text-3xl font-bold text-900">{{ statusSummary['Perdido'] || 0 }}</div>
+          <div class="text-sm text-500">Perdido</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #emptyState>
+    <div class="surface-card p-6 border-round-2xl shadow-2 text-center mt-4">
+      <div
+        class="bg-green-50 border-circle p-4 inline-flex align-items-center justify-content-center mb-4"
+        style="width: 80px; height: 80px"
+      >
+        <i class="pi pi-chart-bar text-green-600 text-4xl"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-900 mb-2">Nenhum dado encontrado</h2>
+      <p class="text-600 line-height-3 mb-5 max-w-30rem mx-auto">
+        Parece que você ainda não tem leads ou propriedades cadastrados. Comece adicionando seus
+        primeiros contatos para ver o dashboard ganhar vida!
+      </p>
+      <button
+        pButton
+        label="Cadastrar Primeiro Lead"
+        icon="pi pi-plus"
+        class="p-button-success p-button-lg"
+        (click)="createLead()"
+      ></button>
+    </div>
+  </ng-template>
 </div>

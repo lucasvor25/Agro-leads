@@ -1,73 +1,76 @@
 <div class="layout-wrapper flex h-screen bg-gray-50">
-  
-  <aside class="sidebar flex-shrink-0 flex flex-column transition-all duration-300 border-right-1 border-gray-800" 
-         [ngClass]="{'w-16rem': !collapsed, 'w-5rem': collapsed}"
-         style="background-color: #1a2c24; color: white;">
-    
-    <div class="logo h-5rem flex align-items-center p-3" [ngClass]="{'justify-content-center': collapsed}">
+  <aside
+    class="sidebar flex-shrink-0 flex flex-column transition-all duration-300 border-right-1 border-gray-800"
+    [ngClass]="{ 'w-16rem': !collapsed, 'w-5rem': collapsed }"
+    style="background-color: #1a2c24; color: white"
+  >
+    <div
+      class="logo h-5rem flex align-items-center p-3"
+      [ngClass]="{ 'justify-content-center': collapsed }"
+    >
       <i class="pi pi-box text-2xl text-yellow-500"></i>
-      <span *ngIf="!collapsed" class="text-xl font-bold ml-2 white-space-nowrap fadein animation-duration-300">AgroCRM</span>
+      <span
+        *ngIf="!collapsed"
+        class="text-xl font-bold ml-2 white-space-nowrap fadein animation-duration-300"
+        >AgroCRM</span
+      >
     </div>
 
     <nav class="flex-1 overflow-y-auto px-2">
       <ul class="list-none p-0 m-0">
-        
         <li class="mb-2">
-          <a routerLink="/dashboard" routerLinkActive="bg-white-alpha-10 text-yellow-500 border-left-3 border-yellow-500" 
-             class="flex align-items-center p-3 border-round text-gray-300 hover:text-white hover:bg-white-alpha-10 cursor-pointer no-underline transition-colors"
-             [ngClass]="{'justify-content-center': collapsed}">
-            <i class="pi pi-th-large text-xl" [ngClass]="{'mr-2': !collapsed}"></i>
-            <span *ngIf="!collapsed" class="font-medium fadein animation-duration-300">Dashboard</span>
+          <a
+            routerLink="/dashboard"
+            routerLinkActive="bg-white-alpha-10 text-yellow-500 border-left-3 border-yellow-500"
+            class="flex align-items-center p-3 border-round text-gray-300 hover:text-white hover:bg-white-alpha-10 cursor-pointer no-underline transition-colors"
+            [ngClass]="{ 'justify-content-center': collapsed }"
+          >
+            <i class="pi pi-th-large text-xl" [ngClass]="{ 'mr-2': !collapsed }"></i>
+            <span *ngIf="!collapsed" class="font-medium fadein animation-duration-300"
+              >Dashboard</span
+            >
           </a>
         </li>
 
         <li class="mb-2">
-          <a routerLink="/leads" routerLinkActive="bg-white-alpha-10 text-yellow-500 border-left-3 border-yellow-500"
-             class="flex align-items-center p-3 border-round text-gray-300 hover:text-white hover:bg-white-alpha-10 cursor-pointer no-underline transition-colors"
-             [ngClass]="{'justify-content-center': collapsed}">
-            <i class="pi pi-users text-xl" [ngClass]="{'mr-2': !collapsed}"></i>
+          <a
+            routerLink="/leads"
+            routerLinkActive="bg-white-alpha-10 text-yellow-500 border-left-3 border-yellow-500"
+            class="flex align-items-center p-3 border-round text-gray-300 hover:text-white hover:bg-white-alpha-10 cursor-pointer no-underline transition-colors"
+            [ngClass]="{ 'justify-content-center': collapsed }"
+          >
+            <i class="pi pi-users text-xl" [ngClass]="{ 'mr-2': !collapsed }"></i>
             <span *ngIf="!collapsed" class="font-medium fadein animation-duration-300">Leads</span>
           </a>
         </li>
 
         <li>
-          <a routerLink="/propriedades" routerLinkActive="bg-white-alpha-10 text-yellow-500 border-left-3 border-yellow-500"
-             class="flex align-items-center p-3 border-round text-gray-300 hover:text-white hover:bg-white-alpha-10 cursor-pointer no-underline transition-colors"
-             [ngClass]="{'justify-content-center': collapsed}">
-            <i class="pi pi-map-marker text-xl" [ngClass]="{'mr-2': !collapsed}"></i>
-            <span *ngIf="!collapsed" class="font-medium fadein animation-duration-300">Propriedades</span>
+          <a
+            routerLink="/propriedades"
+            routerLinkActive="bg-white-alpha-10 text-yellow-500 border-left-3 border-yellow-500"
+            class="flex align-items-center p-3 border-round text-gray-300 hover:text-white hover:bg-white-alpha-10 cursor-pointer no-underline transition-colors"
+            [ngClass]="{ 'justify-content-center': collapsed }"
+          >
+            <i class="pi pi-map-marker text-xl" [ngClass]="{ 'mr-2': !collapsed }"></i>
+            <span *ngIf="!collapsed" class="font-medium fadein animation-duration-300"
+              >Propriedades</span
+            >
           </a>
         </li>
       </ul>
     </nav>
 
     <div class="p-3 mt-auto border-top-1 border-gray-700">
-        <button (click)="toggleSidebar()" 
-                class="w-full bg-transparent border-1 border-gray-600 text-gray-300 hover:text-white hover:border-white p-2 border-round cursor-pointer flex align-items-center justify-content-center transition-colors">
-            <i class="pi" [ngClass]="collapsed ? 'pi-angle-right' : 'pi-angle-left'"></i>
-            <span *ngIf="!collapsed" class="ml-2 font-medium white-space-nowrap fadein animation-duration-300">Recolher</span>
-        </button>
+      <button
+        (click)="toggleSidebar()"
+        class="w-full bg-transparent border-1 border-gray-600 text-gray-300 hover:text-white hover:border-white p-2 border-round cursor-pointer flex align-items-center justify-content-center transition-colors"
+      >
+        <i class="pi" [ngClass]="collapsed ? 'pi-angle-right' : 'pi-angle-left'"></i>
+      </button>
     </div>
   </aside>
 
   <div class="main-content flex-1 flex flex-column h-full overflow-hidden relative">
-    
-    <!-- <header class="topbar h-5rem bg-white border-bottom-1 surface-border flex align-items-center justify-content-between px-4 shadow-1 z-1">
-      <div>
-        <h1 class="text-2xl font-bold m-0 text-gray-800">Dashboard</h1>
-        <span class="text-sm text-gray-500">Visão geral da sua carteira de leads 2</span>
-      </div>
-      
-      <div class="actions flex align-items-center gap-3">
-        <span class="p-input-icon-left hidden md:block">
-            <i class="pi pi-search"></i>
-            <input type="text" pInputText placeholder="Buscar leads..." class="p-inputtext-sm w-20rem border-round-3xl" />
-        </span>
-        <i class="pi pi-bell text-xl text-gray-500 p-overlay-badge cursor-pointer" pBadge value="3" severity="warning"></i>
-        <p-avatar label="U" shape="circle" styleClass="bg-green-700 text-white cursor-pointer"></p-avatar>
-      </div>
-    </header> -->
-
     <main class="flex-1 overflow-y-auto p-4 bg-gray-50">
       <router-outlet></router-outlet>
     </main>

@@ -13,7 +13,7 @@ export class Property {
     city: string;
 
     @Column()
-    culture: string; // Soja, Milho...
+    culture: string;
 
     @Column('decimal', { precision: 10, scale: 2 })
     area: number;

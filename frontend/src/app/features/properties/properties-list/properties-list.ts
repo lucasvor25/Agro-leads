@@ -1,17 +1,18 @@
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router'; // <--- Router Importado
+import { Router } from '@angular/router';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { PaginatorModule } from 'primeng/paginator';
 import * as mapboxgl from 'mapbox-gl';
 
-import { PropertyService } from '../../../core/services/property.service';
 import { PRIMENG_MODULES } from '../../../shared/modules/prime-ng-module';
 import { environment } from 'src/environments/environment';
 import { PropertyCreateComponent } from '../property-create/property-create';
 import { PropertiesFilterComponent, PropertyFilters } from '../property-filter/property-filter';
+import { PropertyService } from 'src/app/core/services/property';
 
 @Component({
     selector: 'app-properties-list',
@@ -23,25 +24,26 @@ import { PropertiesFilterComponent, PropertyFilters } from '../property-filter/p
         PropertyCreateComponent,
         PropertiesFilterComponent,
         ConfirmDialogModule,
-        ToastModule
+        ToastModule,
+        PaginatorModule
     ],
     providers: [ConfirmationService, MessageService],
     templateUrl: './properties-list.html',
     styleUrls: ['./properties-list.css']
 })
 export class PropertiesListComponent implements OnInit, OnDestroy {
-
     @ViewChild(PropertyCreateComponent) createModal!: PropertyCreateComponent;
 
     viewMode: 'list' | 'map' = 'list';
     map: mapboxgl.Map | undefined;
 
-    // Dados Principais
     properties: any[] = [];
-    filteredProperties: any[] = []; // Lista filtrada que será exibida
+    filteredProperties: any[] = [];
     loading: boolean = true;
 
-    // Estado do Filtro
+    first: number = 0;
+    rows: number = 12;
+
     currentFilters: PropertyFilters = {
         search: '',
         culture: null,
@@ -53,7 +55,7 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         private propertyService: PropertyService,
         private confirmationService: ConfirmationService,
         private messageService: MessageService,
-        private router: Router // <--- Router Injetado
+        private router: Router
     ) {
         (mapboxgl as any).accessToken = environment.mapboxToken;
     }
@@ -62,12 +64,22 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         this.loadProperties();
     }
 
+    get pagedProperties(): any[] {
+        return this.filteredProperties.slice(this.first, this.first + this.rows);
+    }
+
+    onPageChange(event: any) {
+        this.first = event.first;
+        this.rows = event.rows;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     loadProperties() {
         this.loading = true;
         this.propertyService.getProperties().subscribe({
             next: (data) => {
                 this.properties = data;
-                this.applyFilters(); // Aplica filtros iniciais
+                this.applyFilters();
                 this.loading = false;
             },
             error: (err) => {
@@ -78,9 +90,6 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         });
     }
 
-    // --- FILTRAGEM ---
-
-    // Recebe evento do componente filho
     handleFilterChange(filters: PropertyFilters) {
         this.currentFilters = filters;
         this.applyFilters();
@@ -90,7 +99,6 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         let temp = [...this.properties];
         const f = this.currentFilters;
 
-        // 1. Texto
         if (f.search) {
             const s = f.search.toLowerCase();
             temp = temp.filter(p =>
@@ -99,17 +107,14 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
             );
         }
 
-        // 2. Cultura
         if (f.culture) {
             temp = temp.filter(p => p.culture === f.culture);
         }
 
-        // 3. Cidade
         if (f.city) {
             temp = temp.filter(p => p.city === f.city);
         }
 
-        // 4. Ordenação
         temp.sort((a, b) => {
             const areaA = Number(a.area);
             const areaB = Number(b.area);
@@ -117,29 +122,23 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         });
 
         this.filteredProperties = temp;
+        this.first = 0;
 
         if (this.viewMode === 'map') {
             this.updateMap();
         }
     }
 
-    // --- NAVEGAÇÃO ---
     openLeadDetails(leadId: number) {
         this.router.navigate(['/leads', leadId], { fragment: 'properties' });
     }
 
-    // --- CRUD ---
-
     openNewPropertyModal() {
-        if (this.createModal) {
-            this.createModal.open();
-        }
+        if (this.createModal) this.createModal.open();
     }
 
     editProperty(prop: any) {
-        if (this.createModal) {
-            this.createModal.open(prop);
-        }
+        if (this.createModal) this.createModal.open(prop);
     }
 
     deleteProperty(event: Event, id: number) {
@@ -165,17 +164,11 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         });
     }
 
-    // --- MAPA ---
-
     switchView(mode: 'list' | 'map') {
         this.viewMode = mode;
         if (mode === 'map') {
             setTimeout(() => this.initMap(), 100);
         }
-    }
-
-    onFilterChange() { // Legado (pode remover se não usar mais direto no HTML)
-        if (this.viewMode === 'map') this.updateMap();
     }
 
     updateMap() {
@@ -186,42 +179,27 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
 
     initMap() {
         if (this.map) return;
-
         this.map = new mapboxgl.Map({
             container: 'properties-map',
             style: 'mapbox://styles/mapbox/satellite-streets-v12',
             center: [-47.5, -18.5],
             zoom: 6.5
         });
-
         this.map.addControl(new mapboxgl.NavigationControl());
-
-        this.map.on('load', () => {
-            this.addMarkersToMap();
-        });
+        this.map.on('load', () => this.addMarkersToMap());
     }
 
     addMarkersToMap() {
         if (!this.map) return;
-
-        // Nota: Idealmente limpar markers antigos aqui se necessário
-
         this.filteredProperties.forEach(prop => {
-            if (prop.geometry) {
-                this.addPolygonToMap(prop);
-            }
-
+            if (prop.geometry) this.addPolygonToMap(prop);
             const lat = prop.lat || -18.5;
             const lng = prop.lng || -47.5;
-
-            const popupContent = `
-                <div style="font-family: sans-serif; color: #333;">
-                    <strong style="font-size: 14px;">${prop.name}</strong><br>
-                    <span style="font-size: 12px; color: #666;">${prop.culture} • ${prop.area} ha</span>
-                </div>
-            `;
-            const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(popupContent);
-
+            const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
+        <div style="font-family: sans-serif; color: #333;">
+          <strong style="font-size: 14px;">${prop.name}</strong><br>
+          <span style="font-size: 12px; color: #666;">${prop.culture} • ${prop.area} ha</span>
+        </div>`);
             new mapboxgl.Marker({ color: this.getColorByCulture(prop.culture) })
                 .setLngLat([lng, lat])
                 .setPopup(popup)
@@ -232,30 +210,18 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
     addPolygonToMap(prop: any) {
         const sourceId = `source-${prop.id}`;
         if (this.map?.getSource(sourceId)) return;
-
-        this.map?.addSource(sourceId, {
-            type: 'geojson',
-            data: prop.geometry
-        });
-
+        this.map?.addSource(sourceId, { type: 'geojson', data: prop.geometry });
         this.map?.addLayer({
             id: `layer-${prop.id}`,
             type: 'fill',
             source: sourceId,
-            paint: {
-                'fill-color': this.getColorByCulture(prop.culture),
-                'fill-opacity': 0.4
-            }
+            paint: { 'fill-color': this.getColorByCulture(prop.culture), 'fill-opacity': 0.4 }
         });
-
         this.map?.addLayer({
             id: `outline-${prop.id}`,
             type: 'line',
             source: sourceId,
-            paint: {
-                'line-color': '#fff',
-                'line-width': 2
-            }
+            paint: { 'line-color': '#fff', 'line-width': 2 }
         });
     }
 

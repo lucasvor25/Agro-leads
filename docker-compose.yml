@@ -1,16 +1,51 @@
-version: '3.8'
+version: "3.8"
+
 services:
   postgres:
     image: postgres:15
     container_name: agrocrm_db
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
-      POSTGRES_DB: agrocrm
+      # Variáveis que o container do Postgres usa para criar o banco
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5432:5432"
+      - "${DB_PORT}:5432" # Expõe a porta 5432 para o seu computador
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - agrocrm_network
+
+  backend:
+    build: ./backend # Caminho para a pasta onde está o Dockerfile do NestJS
+    container_name: agrocrm_backend
+    environment:
+      - DB_TYPE=${DB_TYPE}
+      - DB_HOST=postgres # Dentro do Docker, ele chama o serviço pelo nome
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    networks:
+      - agrocrm_network
+
+  frontend:
+    build: ./frontend # Caminho para a pasta onde está o Dockerfile do Angular
+    container_name: agrocrm_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - agrocrm_network
+
+networks:
+  agrocrm_network:
+    driver: bridge
 
 volumes:
   pgdata:

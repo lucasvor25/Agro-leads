@@ -1,0 +1,120 @@
+.leads-page {
+  background-color: #ffffff;
+  min-height: 100vh;
+}
+
+.lead-card {
+  background: #ffffff;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  padding: 1.25rem;
+}
+
+.lead-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  border-color: #e5e7eb;
+}
+
+.lead-card.is-priority {
+  border-color: #fbbf24 !important;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);
+}
+
+.lead-name {
+  font-family: 'Georgia', serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.icon-circle {
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+:host ::ng-deep .p-button.p-button-danger.p-button-text {
+  color: #ef4444 !important;
+}
+
+:host ::ng-deep .p-tag {
+  font-size: 0.7rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.area-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #f3f4f6;
+  padding: 0.35rem 0.7rem;
+  border-radius: 8px;
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.75rem;
+}
+
+.surface-border {
+  border-color: #f3f4f6 !important;
+}
+
+.truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.text-sm {
+  font-size: 0.85rem !important;
+}
+
+.lead-card button.p-button-text {
+  transition: opacity 0.2s ease;
+  width: 2rem;
+  height: 2rem;
+}
+
+:host ::ng-deep .p-paginator {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 0.75rem;
+  margin-top: 2rem;
+  justify-content: center;
+  border: none;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-element {
+  color: #6b7280;
+  border-radius: 50%;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  margin: 0 0.2rem;
+  font-weight: 600;
+  border: none;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-page.p-highlight {
+  background: #eef4ff;
+  color: #3b82f6;
+}
+
+.empty-state {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 4rem 2rem;
+  text-align: center;
+  border: 1px dashed #e5e7eb;
+}

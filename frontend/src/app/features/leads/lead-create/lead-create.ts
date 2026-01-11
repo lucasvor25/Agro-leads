@@ -8,7 +8,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { CheckboxModule } from 'primeng/checkbox';
-import { LeadService } from '../../../core/services/lead.service';
+import { LeadService } from '../../../core/services/lead';
 import { InputMaskModule } from 'primeng/inputmask';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
@@ -42,10 +42,11 @@ export class LeadCreateComponent implements OnInit {
   visible: boolean = false;
   loading: boolean = false;
 
-  // --- VARIAVEIS DE CONTROLE DE EDIÇÃO ---
   isEditMode: boolean = false;
   currentLeadId: number | null = null;
-  // ---------------------------------------
+
+  cpfInvalid: boolean = false;
+  emailInvalid: boolean = false;
 
   mgCities: any[] = [];
   filteredCities: any[] = [];
@@ -92,25 +93,20 @@ export class LeadCreateComponent implements OnInit {
     }
   }
 
-  // --- ALTERADO: Agora aceita um lead opcional ---
   open(leadToEdit?: any) {
     this.visible = true;
+    this.resetForm();
 
     if (leadToEdit) {
-      // MODO EDIÇÃO
       this.isEditMode = true;
       this.currentLeadId = leadToEdit.id;
-
       this.newLead = {
         ...leadToEdit,
         city: leadToEdit.city ? { label: leadToEdit.city, value: leadToEdit.city } : null
       };
-
     } else {
-      // MODO CRIAÇÃO
       this.isEditMode = false;
       this.currentLeadId = null;
-      this.resetForm();
     }
   }
 
@@ -120,82 +116,103 @@ export class LeadCreateComponent implements OnInit {
   }
 
   save() {
-
+    this.cpfInvalid = false;
+    this.emailInvalid = false;
     let cityClean = this.newLead.city;
     if (this.newLead.city && this.newLead.city.value) {
       cityClean = this.newLead.city.value;
     }
 
-    // --- 1. VALIDAÇÃO (Serve para os dois casos) ---
     if (!this.newLead.name || !cityClean || !this.newLead.phone) {
-      this.messageService.add({ severity: 'warn', summary: 'Atenção', detail: 'Preencha Nome, Telefone e Município.' });
+      this.messageService.add({ severity: 'warn', summary: 'Campos Incompletos', detail: 'Preencha Nome, Telefone e Município.' });
       return;
     }
 
     if (!this.newLead.area || this.newLead.area <= 0) {
-      this.messageService.add({ severity: 'warn', summary: 'Atenção', detail: 'A Área é obrigatória.' });
+      this.messageService.add({ severity: 'warn', summary: 'Atenção', detail: 'Informe uma Área válida (maior que 0).' });
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!this.newLead.email || !emailRegex.test(this.newLead.email)) {
-      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Email inválido.' });
+    if (this.newLead.email && !emailRegex.test(this.newLead.email)) {
+      this.emailInvalid = true;
+      this.messageService.add({ severity: 'error', summary: 'E-mail Inválido', detail: 'Verifique o formato do e-mail.' });
       return;
     }
 
     const cpfClean = (this.newLead.cpf || '').replace(/\D/g, '');
     if (cpfClean.length !== 11) {
-      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'O CPF deve ter 11 dígitos.' });
+      this.cpfInvalid = true;
+      this.messageService.add({ severity: 'error', summary: 'CPF Inválido', detail: 'O CPF deve ter 11 dígitos.' });
       return;
     }
 
-    // --- 2. PREPARAÇÃO ---
     const payload = { ...this.newLead };
     payload.cpf = cpfClean;
-    payload.city = cityClean; // Envia apenas a string da cidade
+    payload.city = cityClean;
+
+    delete payload.isPriority;
+    delete payload.id;
+    delete payload.createdAt;
+    delete payload.updatedAt;
 
     this.loading = true;
 
-    // --- 3. DECISÃO: CRIAR OU ATUALIZAR ---
     if (this.isEditMode && this.currentLeadId) {
-
-      // >>> CHAMADA DE UPDATE <<<
       this.leadService.update(this.currentLeadId, payload).subscribe({
-        next: () => {
-          this.finalizeSave('Lead atualizado com sucesso!');
-        },
+        next: () => this.finalizeSave('Lead atualizado com sucesso!'),
         error: (err) => this.handleError(err)
       });
-
     } else {
-
-      // >>> CHAMADA DE CREATE <<<
       this.leadService.create(payload).subscribe({
-        next: () => {
-          this.finalizeSave('Lead criado com sucesso!');
-        },
+        next: () => this.finalizeSave('Lead criado com sucesso!'),
         error: (err) => this.handleError(err)
       });
     }
   }
 
-  // Métodos auxiliares para limpar o código do save()
   private finalizeSave(successMessage: string) {
     this.loading = false;
     this.visible = false;
-    this.onSave.emit(); // Avisa o pai para recarregar a lista
+    this.onSave.emit();
     this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: successMessage });
     this.resetForm();
   }
 
-  private handleError(err: any) {
-    console.error(err);
+  private handleError(error: any) {
     this.loading = false;
-    const msg = err.error?.message || 'Falha na operação.';
-    this.messageService.add({ severity: 'error', summary: 'Erro', detail: msg });
+    console.error('Erro na requisição:', error);
+
+    if (error.status === 409) {
+      const msg = error.error?.message || 'Registro duplicado.';
+
+      if (msg.toLowerCase().includes('cpf')) {
+        this.cpfInvalid = true;
+      }
+      if (msg.toLowerCase().includes('e-mail') || msg.toLowerCase().includes('email')) {
+        this.emailInvalid = true;
+      }
+
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: msg
+      });
+      return;
+    }
+
+    if (error.status === 400 && error.error?.message) {
+      const detail = Array.isArray(error.error.message) ? error.error.message[0] : error.error.message;
+      this.messageService.add({ severity: 'error', summary: 'Dados Inválidos', detail });
+      return;
+    }
+
+    this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar o lead.' });
   }
 
   resetForm() {
+    this.cpfInvalid = false;
+    this.emailInvalid = false;
     this.newLead = {
       name: '', cpf: '', email: '', phone: '', city: null,
       area: null, status: 'Novo', isPriority: false, obs: ''

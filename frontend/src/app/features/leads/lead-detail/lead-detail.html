@@ -1,135 +1,121 @@
 <p-toast></p-toast>
 
 <div class="p-4 fadein animation-duration-500" *ngIf="lead; else loadingTemplate">
-
-  <div class="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-4 gap-3">
-    <div>
-      <h1 class="text-3xl font-bold m-0 text-900">Detalhes do Lead</h1>
-      <div class="flex align-items-center gap-2 mt-2 cursor-pointer text-600 hover:text-primary transition-colors" (click)="goBack()">
-        <i class="pi pi-arrow-left text-sm"></i>
-        <span>Voltar para Leads</span>
-      </div>
+  <div class="mb-4">
+    <h1 class="text-3xl font-bold m-0 text-900">Detalhes do Lead</h1>
+    <div
+      class="flex align-items-center gap-2 cursor-pointer text-600 hover:text-primary mt-2"
+      (click)="goBack()"
+    >
+      <i class="pi pi-arrow-left text-sm"></i>
     </div>
   </div>
 
-  <div class="surface-card p-4 border-round-2xl shadow-1 mb-5">
-    
-    <div class="flex flex-column md:flex-row justify-content-between mb-5 surface-border pb-4 gap-4">
-      <div class="flex flex-column gap-2">
-        <div class="flex align-items-center gap-3">
-          <i *ngIf="lead.isPriority" class="pi pi-star-fill text-yellow-500 text-2xl" pTooltip="Prioridade Alta"></i>
-          <h2 class="text-3xl font-bold text-900 m-0">{{ lead.name }}</h2>
-          <p-tag [value]="lead.status" [severity]="getStatusSeverity(lead.status)" [rounded]="true"></p-tag>
+  <div class="lead-card mb-4">
+    <div class="flex align-items-center justify-content-between mb-3">
+      <div class="flex align-items-center gap-3">
+        <i *ngIf="lead.isPriority" class="pi pi-star-fill priority-icon"></i>
+        <h2 class="lead-name">{{ lead.name }}</h2>
+        <p-tag
+          [value]="lead.status"
+          [severity]="getStatusSeverity(lead.status)"
+          [rounded]="true"
+        ></p-tag>
+      </div>
+    </div>
+
+    <div class="lead-contacts">
+      <span><i class="pi pi-map-marker"></i> {{ lead.city }}</span>
+      <span><i class="pi pi-phone"></i> {{ lead.phone }}</span>
+      <span><i class="pi pi-envelope"></i> {{ lead.email }}</span>
+      <span
+        ><i class="pi pi-calendar"></i> Criado em {{ lead.createdAt | date : 'dd/MM/yyyy' }}</span
+      >
+    </div>
+
+    <div class="grid mt-4">
+      <div class="col-12 md:col-3">
+        <div class="info-box">
+          <span class="info-label">CPF</span>
+          <span class="info-value">{{ lead.cpf }}</span>
         </div>
-        
-        <div class="flex flex-wrap gap-4 mt-2 text-600">
-          <span class="flex align-items-center gap-2"><i class="pi pi-map-marker"></i> {{ lead.city }}</span>
-          <span class="flex align-items-center gap-2"><i class="pi pi-phone"></i> {{ lead.phone }}</span>
-          <span class="flex align-items-center gap-2"><i class="pi pi-envelope"></i> {{ lead.email }}</span>
+      </div>
+      <div class="col-12 md:col-3">
+        <div class="info-box">
+          <span class="info-label">Área Total</span>
+          <span class="info-value">{{ lead.area }} ha</span>
+        </div>
+      </div>
+      <div class="col-12 md:col-3">
+        <div class="info-box">
+          <span class="info-label">Propriedades</span>
+          <span class="info-value">{{ properties.length }}</span>
+        </div>
+      </div>
+      <div class="col-12 md:col-3">
+        <div class="info-box">
+          <span class="info-label">Atualizado</span>
+          <span class="info-value">{{ lead.updatedAt | date : 'dd/MM/yyyy' }}</span>
         </div>
       </div>
     </div>
 
-    <div class="grid mb-2">
-      <div class="col-12 md:col-6 lg:col-3">
-        <div class="surface-50 p-3 border-round-xl h-full">
-          <span class="text-500 text-sm font-medium block mb-2">CPF</span>
-          <span class="text-900 text-xl font-bold">{{ lead.cpf }}</span>
-        </div>
-      </div>
-
-      <div class="col-12 md:col-6 lg:col-3">
-        <div class="surface-50 p-3 border-round-xl h-full">
-          <span class="text-500 text-sm font-medium block mb-2">Área Total (Lead)</span>
-          <span class="text-900 text-xl font-bold">{{ lead.area }} ha</span>
-        </div>
-      </div>
-
-      <div class="col-12 md:col-6 lg:col-3">
-        <div class="surface-50 p-3 border-round-xl h-full flex align-items-center gap-3 transition-colors hover:surface-100 cursor-default">
-           <div class="bg-bluegray-100 text-bluegray-600 border-circle p-2 flex align-items-center justify-content-center shadow-1" style="width: 48px; height: 48px;">
-               <i class="pi pi-calendar-plus text-xl"></i>
-           </div>
-           <div class="flex flex-column">
-               <span class="text-xs text-500 font-bold uppercase mb-1">Data de Cadastro</span>
-               <span class="text-xl font-bold text-900">{{ lead.createdAt | date:'dd/MM/yyyy' }}</span>
-           </div>
-        </div>
-      </div>
-    </div>
-    
     <div class="mt-4">
-        <h3 class="text-lg font-bold text-900 mb-3 flex align-items-center gap-2">
-          <i class="pi pi-file-edit text-gray-500"></i> Comentários e Observações
-        </h3>
-        <div class="surface-50 border-round-xl p-4 shadow-1 line-height-3 text-700">
-          <span *ngIf="lead.obs; else noObs">{{ lead.obs }}</span>
-          <ng-template #noObs>
-            <span class="text-gray-500 font-italic">Nenhuma observação registrada para este lead.</span>
-          </ng-template>
-        </div>
+      <div class="flex align-items-center gap-2 mb-2">
+        <strong>Comentários</strong>
+      </div>
+      <div class="comments-box">
+        <span *ngIf="lead.obs; else noObs">{{ lead.obs }}</span>
+        <ng-template #noObs>
+          <span class="text-500">Nenhuma observação registrada.</span>
+        </ng-template>
+      </div>
     </div>
-
   </div>
 
-  <div class="mb-5" *ngIf="properties.length > 0">
-    
+  <div *ngIf="properties.length">
     <div class="flex justify-content-between align-items-center mb-3">
-        <h3 class="text-xl font-bold text-900 m-0 flex align-items-center gap-2">
-            <i class="pi pi-map text-green-600"></i> 
-            Propriedades Rurais ({{ properties.length }})
-        </h3>
+      <h3 class="text-xl font-bold">Propriedades Rurais ({{ properties.length }})</h3>
     </div>
 
-    <div class="surface-card border-round-xl shadow-1 overflow-hidden">
-        
-        <div class="relative w-full h-20rem bg-gray-100">
-            <div id="mini-map" style="width: 100%; height: 100%;"></div>
+    <div class="properties-wrapper">
+      <div class="map-header">
+        <div id="mini-map" class="mini-map"></div>
+      </div>
+
+      <div class="grid p-3">
+        <div class="col-12 md:col-6" *ngFor="let prop of properties">
+          <div class="property-card" [ngClass]="{ selected: selectedPropId === prop.id }">
+            <div class="flex justify-content-between mb-2">
+              <strong>{{ prop.name }}</strong>
             </div>
-
-        <div class="p-3 bg-white grid m-0">
-             <div class="col-12 md:col-6" *ngFor="let prop of properties">
-                
-                <div class="border-1 surface-border border-round p-3 hover:surface-50 cursor-pointer transition-colors h-full flex flex-column"
-                     (mouseenter)="focusOnMap(prop)"
-                     [ngClass]="{'border-green-500 surface-50': selectedPropId === prop.id}">
-                    
-                    <div class="flex align-items-center gap-2 mb-2">
-                        <span class="font-bold text-900">{{ prop.name }}</span>
-                    </div>
-
-                    <div class="flex align-items-center gap-3 text-sm text-600 mb-2">
-                        <span><i class="pi pi-map-marker mr-1"></i> {{ prop.city }}</span>
-                        <span><i class="pi pi-tag mr-1"></i> {{ prop.area }} ha</span>
-                    </div>
-
-                    <div class="mt-auto">
-                         <p-tag [value]="prop.culture" [severity]="prop.culture === 'Soja' ? 'success' : prop.culture === 'Milho' ? 'warning' : 'info'"></p-tag>
-                    </div>
-
-                    <div class="text-sm text-600 mt-3 line-height-3 border-gray-200 pt-2 flex align-items-start gap-2" *ngIf="prop.obs">
-                        <span>{{ prop.obs }}</span>
-                    </div>
-
-                </div>
-             </div>
+            <div class="property-meta">
+              <span><i class="pi pi-map-marker"></i> {{ prop.city }}</span>
+              <span><i class="pi pi-tag"></i> {{ prop.area }} ha</span>
+            </div>
+            <p-tag
+              [value]="prop.culture"
+              class="mt-2"
+              [severity]="
+                prop.culture === 'Soja' ? 'success' : prop.culture === 'Milho' ? 'warning' : 'info'
+              "
+            ></p-tag>
+            <div class="property-obs" *ngIf="prop.obs">
+              {{ prop.obs }}
+            </div>
+          </div>
         </div>
+      </div>
     </div>
   </div>
-
 </div>
 
 <ng-template #loadingTemplate>
-  <div class="p-4">
-    <p-skeleton width="200px" height="3rem" styleClass="mb-4"></p-skeleton>
-    <div class="surface-card p-4 border-round shadow-1">
-      <p-skeleton width="100%" height="150px" styleClass="mb-4"></p-skeleton>
-      <div class="grid">
-         <div class="col-3"><p-skeleton height="80px"></p-skeleton></div>
-         <div class="col-3"><p-skeleton height="80px"></p-skeleton></div>
-         <div class="col-3"><p-skeleton height="80px"></p-skeleton></div>
-         <div class="col-3"><p-skeleton height="80px"></p-skeleton></div>
-      </div>
-    </div>
+  <div
+    class="flex flex-column align-items-center justify-content-center p-8"
+    style="min-height: 400px"
+  >
+    <p-progressSpinner strokeWidth="3"></p-progressSpinner>
+    <p class="text-600 font-medium mt-3">Carregando detalhes...</p>
   </div>
 </ng-template>

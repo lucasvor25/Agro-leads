@@ -1,7 +1,7 @@
 import { Property } from 'src/properties/entities/property.entity';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 
-@Entity('leads') // Nome da tabela no banco
+@Entity('leads')
 export class Lead {
     @PrimaryGeneratedColumn()
     id: number;
@@ -9,7 +9,7 @@ export class Lead {
     @Column({ length: 100 })
     name: string;
 
-    @Column({ unique: true, length: 14 }) // CPF único
+    @Column({ unique: true, length: 14 })
     cpf: string;
 
     @Column({ length: 100 })
@@ -25,7 +25,7 @@ export class Lead {
     state: string;
 
     @Column({ default: 'Novo' })
-    status: string; // 'Novo' | 'Contato Inicial' | ...
+    status: string;
 
     @Column('decimal', { precision: 10, scale: 2 })
     area: number;

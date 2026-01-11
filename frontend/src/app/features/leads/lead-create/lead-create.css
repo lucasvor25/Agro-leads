@@ -1,47 +1,121 @@
-/* lead-create.css */
-
-:host ::ng-deep .p-dialog-content { 
-    overflow-y: visible; 
+:host ::ng-deep .p-dialog .p-dialog-header {
+  border-bottom: 1px solid #f3f4f6;
+  padding: 1.5rem;
+  background: #ffffff;
+  border-top-right-radius: 16px;
+  border-top-left-radius: 16px;
 }
 
-/* --- MÁGICA VISUAL DO AUTOCOMPLETE (Igual ao Property Create) --- */
-:host ::ng-deep .p-autocomplete { 
-    width: 100%; 
-    display: flex; 
+:host ::ng-deep .p-dialog-content {
+  padding: 2rem 1.5rem 1rem 1.5rem;
+  background: #ffffff;
+  overflow-y: visible;
 }
 
-:host ::ng-deep .p-autocomplete-input { 
-    width: 100%; 
-    border-right: 0 none !important; 
-    border-top-right-radius: 0; 
-    border-bottom-right-radius: 0;
-    box-shadow: none !important; /* Remove sombra que cria degrau */
+:host ::ng-deep .p-dialog .p-dialog-footer {
+  border-top: 1px solid #f3f4f6;
+  padding: 1.5rem;
+  background: #ffffff;
+  border-bottom-right-radius: 16px;
+  border-bottom-left-radius: 16px;
+}
+
+:host ::ng-deep .p-dialog {
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: none;
+}
+
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-inputnumber-input,
+:host ::ng-deep .p-inputmask,
+:host ::ng-deep .p-dropdown {
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border-color: #ced4da;
+  transition: all 0.2s;
+}
+
+:host ::ng-deep .p-dropdown {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  height: 45px;
+}
+
+:host ::ng-deep .p-dropdown .p-dropdown-label {
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+}
+
+label {
+  margin-bottom: 0.5rem;
+  display: block;
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+:host ::ng-deep .p-autocomplete {
+  width: 100%;
+  display: flex;
+}
+
+:host ::ng-deep .p-autocomplete-input {
+  width: 100%;
+  border-right: 0 none !important;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: none !important;
 }
 
 :host ::ng-deep .p-autocomplete-dropdown {
-    background: transparent !important; 
-    border-left: 0 none !important; 
-    border-top-left-radius: 0; 
-    border-bottom-left-radius: 0;
-    color: #6c757d !important;
-    width: 2.5rem;
-    border-color: #ced4da;
+  background: transparent !important;
+  border-left: 0 none !important;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  color: #6c757d !important;
+  width: 2.5rem;
+  border-color: #ced4da;
 }
 
-/* CORREÇÃO DO FOCO (Verde #10b981) */
-:host ::ng-deep .p-autocomplete.p-focus .p-autocomplete-input {
-    border-color: #10b981 !important; 
+:host ::ng-deep .p-inputtext:enabled:focus,
+:host ::ng-deep .p-dropdown:not(.p-disabled).p-focus,
+:host ::ng-deep .p-inputnumber-input:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
 }
+
+:host ::ng-deep .p-autocomplete.p-focus .p-autocomplete-input,
 :host ::ng-deep .p-autocomplete.p-focus .p-autocomplete-dropdown {
-    border-color: #10b981 !important;
+  border-color: #10b981 !important;
 }
 
-/* HOVER */
+:host ::ng-deep .p-inputtext:enabled:hover,
+:host ::ng-deep .p-dropdown:not(.p-disabled):hover,
 :host ::ng-deep .p-autocomplete:hover .p-autocomplete-input,
 :host ::ng-deep .p-autocomplete:hover .p-autocomplete-dropdown {
-    border-color: #10b981 !important;
+  border-color: #10b981 !important;
 }
-:host ::ng-deep .p-autocomplete-dropdown:hover {
-    background: transparent !important;
-    color: #10b981 !important;
+
+:host ::ng-deep .ng-invalid.ng-dirty,
+:host ::ng-deep .p-inputtext.ng-invalid.ng-dirty,
+:host ::ng-deep .p-dropdown.ng-invalid.ng-dirty {
+  border-color: #ef4444 !important;
+}
+
+:host ::ng-deep .ng-invalid.ng-dirty:focus {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2) !important;
+}
+
+.p-error {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+:host ::ng-deep .p-inputtextarea {
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border-color: #ced4da;
 }

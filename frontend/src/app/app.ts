@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterModule, Router, NavigationEnd } from '@angular/router';
-// AQUI: Importando a constante como você pediu
 import { PRIMENG_MODULES } from './shared/modules/prime-ng-module';
 import { filter } from 'rxjs/operators';
 
@@ -12,24 +11,20 @@ import { filter } from 'rxjs/operators';
     CommonModule,
     RouterModule,
     RouterOutlet,
-    // AQUI: Usando o spread operator (...) para espalhar os módulos do array
     ...PRIMENG_MODULES
   ],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App implements OnInit {
-  // Controle do Cabeçalho
   pageTitle: string = 'Dashboard';
   pageSubtitle: string = 'Visão geral da sua carteira';
 
-  // Controle da Sidebar
-  collapsed = false;
+  collapsed = true;
 
   constructor(private router: Router) { }
 
   ngOnInit() {
-    // Escuta a mudança de rota para atualizar o título
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
@@ -38,7 +33,6 @@ export class App implements OnInit {
   }
 
   updateHeader(url: string) {
-    // Lógica para definir o texto baseado na URL
     if (url.includes('/leads')) {
       this.pageTitle = 'Leads';
       this.pageSubtitle = 'Gerenciamento de contatos e oportunidades';

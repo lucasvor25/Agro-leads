@@ -1,10 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Brackets } from 'typeorm'; // Adicionado Brackets
+import { Repository, Brackets } from 'typeorm';
 import { Lead } from './entities/lead.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
-import { GetLeadsFilterDto } from './dto/get-leads-filter.dto'; // Importe seu DTO novo
+import { GetLeadsFilterDto } from './dto/get-leads-filter.dto';
 
 @Injectable()
 export class LeadsService {
@@ -13,10 +13,9 @@ export class LeadsService {
     private leadsRepository: Repository<Lead>,
   ) { }
 
-  create(createLeadDto: CreateLeadDto) {
+  async create(createLeadDto: CreateLeadDto) {
     const lead = this.leadsRepository.create(createLeadDto);
 
-    // Mantive sua lógica de negócio original
     if (lead.area > 100) {
       lead.isPriority = true;
     } else {
@@ -24,19 +23,19 @@ export class LeadsService {
     }
 
     lead.lastContact = new Date();
-    return this.leadsRepository.save(lead);
+
+    try {
+      return await this.leadsRepository.save(lead);
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 
   async findAll(filterDto: GetLeadsFilterDto): Promise<Lead[]> {
     const { search, status, city, priority } = filterDto;
-
     const query = this.leadsRepository.createQueryBuilder('lead');
 
-    // Trazendo o relacionamento 'properties' (substitui o relations: ['properties'])
     query.leftJoinAndSelect('lead.properties', 'properties');
-
-    // --- 1. FILTROS ---
-
 
     if (search) {
       query.andWhere(
@@ -48,12 +47,10 @@ export class LeadsService {
       );
     }
 
-    // Filtro de Status
     if (status && status !== 'Todos') {
       query.andWhere('lead.status = :status', { status });
     }
 
-    // Filtro de Município
     if (city && city !== 'Todos') {
       query.andWhere('lead.city = :city', { city });
     }
@@ -63,11 +60,7 @@ export class LeadsService {
     }
 
     query.orderBy('lead.isPriority', 'DESC');
-
-    // 2º: Dentro da prioridade (e dos normais), ordena pelo maior Hectar
     query.addOrderBy('lead.area', 'DESC');
-
-    // 3º: Critério de desempate: Mais novos primeiro
     query.addOrderBy('lead.createdAt', 'DESC');
 
     return await query.getMany();
@@ -83,10 +76,31 @@ export class LeadsService {
   async update(id: number, updateLeadDto: UpdateLeadDto) {
     const { properties, id: leadId, ...leadData } = updateLeadDto as any;
 
-    return await this.leadsRepository.update(id, leadData);
+    try {
+
+      return await this.leadsRepository.update(id, leadData);
+    } catch (error) {
+      this.handleDBExceptions(error);
+    }
   }
 
   remove(id: number) {
     return this.leadsRepository.delete(id);
+  }
+
+  private handleDBExceptions(error: any) {
+    if (error.code === '23505') {
+      if (error.detail && error.detail.includes('cpf')) {
+        throw new ConflictException('Este CPF já está cadastrado no sistema.');
+      }
+      if (error.detail && error.detail.includes('email')) {
+        throw new ConflictException('Este E-mail já está cadastrado no sistema.');
+      }
+      throw new ConflictException('Registro duplicado (CPF ou E-mail).');
+    }
+
+    console.error(error);
+
+    throw new InternalServerErrorException('Erro ao processar a requisição no banco de dados.');
   }
 }

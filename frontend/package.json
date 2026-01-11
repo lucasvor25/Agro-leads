@@ -28,7 +28,8 @@
     "@angular/compiler": "~17.3.0",
     "@angular/core": "~17.3.0",
     "@angular/forms": "~17.3.0",
-    "@angular/platform-browser": "~17.3.0",
+    "@angular/platform-browser": "^17.3.12",
+    "@angular/platform-browser-dynamic": "^17.3.12",
     "@angular/router": "~17.3.0",
     "@mapbox/mapbox-gl-draw": "^1.5.1",
     "@mapbox/mapbox-gl-geocoder": "^5.1.2",
@@ -42,13 +43,23 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@analogjs/vitest-angular": "^2.2.1",
     "@angular-devkit/build-angular": "^17.3.17",
     "@angular/cli": "~17.3.0",
     "@angular/compiler-cli": "~17.3.0",
+    "@types/jasmine": "^5.1.14",
     "@types/mapbox__mapbox-gl-draw": "^1.4.9",
     "@types/mapbox__mapbox-gl-geocoder": "^5.1.0",
+    "@vitest/browser": "^1.6.1",
+    "cypress": "^15.8.2",
+    "jasmine-core": "^5.13.0",
     "jsdom": "^27.1.0",
+    "karma": "^6.4.4",
+    "karma-chrome-launcher": "^3.2.0",
+    "karma-coverage": "^2.2.1",
+    "karma-jasmine": "^5.1.0",
+    "karma-jasmine-html-reporter": "^2.1.0",
     "typescript": "~5.2.0",
-    "vitest": "^1.0.0"
+    "vitest": "^1.6.1"
   }
 }

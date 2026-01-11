@@ -18,16 +18,24 @@ import * as mapboxgl from 'mapbox-gl';
 import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
 import { environment } from 'src/environments/environment';
-import { LeadService } from '../../../core/services/lead.service';
-import { PropertyService } from '../../../core/services/property.service';
+import { LeadService } from '../../../core/services/lead';
+import { PropertyService } from 'src/app/core/services/property';
 
 @Component({
   selector: 'app-property-create',
   standalone: true,
   imports: [
-    CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule,
-    DropdownModule, InputTextareaModule, InputNumberModule, AutoCompleteModule,
-    ToastModule, SelectButtonModule
+    CommonModule,
+    FormsModule,
+    DialogModule,
+    ButtonModule,
+    InputTextModule,
+    DropdownModule,
+    InputTextareaModule,
+    InputNumberModule,
+    AutoCompleteModule,
+    ToastModule,
+    SelectButtonModule
   ],
   providers: [MessageService],
   templateUrl: './property-create.html',
@@ -45,11 +53,9 @@ export class PropertyCreateComponent implements OnInit {
   loading: boolean = false;
   step: number = 1;
 
-  // Variáveis de Edição
   isEditMode: boolean = false;
   currentPropertyId: number | null = null;
 
-  // Dados Principais
   newProperty: any = {
     lead: null, name: '', city: null, culture: '', obs: '',
     area: null, geometry: null, lat: null, lng: null
@@ -62,7 +68,6 @@ export class PropertyCreateComponent implements OnInit {
   tempPinLat: number | null = null;
   tempPinLng: number | null = null;
 
-  // Listas
   leadsList: any[] = [];
   filteredLeads: any[] = [];
   allCities: any[] = [];
@@ -74,7 +79,6 @@ export class PropertyCreateComponent implements OnInit {
     { label: 'Algodão', value: 'Algodão' }
   ];
 
-  // Mapa e Controles
   map!: mapboxgl.Map;
   draw!: MapboxDraw;
   mapModeOptions = [
@@ -101,8 +105,6 @@ export class PropertyCreateComponent implements OnInit {
     this.leadService.getCitiesMG().subscribe(c => this.allCities = c);
     this.leadService.getLeads().subscribe(l => this.leadsList = l);
   }
-
-  // --- NAVEGAÇÃO E SETUP ---
 
   open(propertyToEdit: any = null) {
     this.resetForm(propertyToEdit);
@@ -140,8 +142,6 @@ export class PropertyCreateComponent implements OnInit {
     }
   }
 
-  // --- MAPA ---
-
   initMap() {
     if (this.map) {
       this.map.remove();
@@ -156,14 +156,12 @@ export class PropertyCreateComponent implements OnInit {
 
     this.map.addControl(new mapboxgl.NavigationControl(), 'bottom-right');
 
-    // --- MUDANÇA PRINCIPAL AQUI ---
-    // Decide qual ferramenta ativar baseado no que o resetForm definiu
     const startMode = this.selectedMapMode === 'draw' ? 'draw_polygon' : 'simple_select';
 
     this.draw = new MapboxDraw({
       displayControlsDefault: false,
       controls: { polygon: true, trash: true },
-      defaultMode: startMode // <--- Usa o modo dinâmico
+      defaultMode: startMode
     });
 
     this.map.addControl(this.draw, 'top-left');
@@ -220,13 +218,11 @@ export class PropertyCreateComponent implements OnInit {
 
       this.manualAreaInput = this.newProperty.area;
 
-      // Adiciona o PIN (isso vai chamar updateCircleFromPin e desenhar o círculo verde automaticamente)
       this.addPin({ lng: centerLng, lat: centerLat } as any, false);
 
       this.map.flyTo({ center: [centerLng, centerLat], zoom: 14 });
 
     } else {
-      // --- MODO DESENHO ---
       this.selectedMapMode = 'draw';
 
       this.tempPolygonGeometry = geo;
@@ -239,18 +235,15 @@ export class PropertyCreateComponent implements OnInit {
     }
   }
 
-  // --- ALTERNÂNCIA DE MODOS (COM MEMÓRIA) ---
   changeMode(event: any) {
     const newMode = event.value;
 
-    // 1. ANTES DE TROCAR: SALVA O ESTADO ATUAL NA MEMÓRIA TEMPORÁRIA
     if (this.selectedMapMode === 'draw') {
       if (this.newProperty.geometry && this.newProperty.geometry.type !== 'Point') {
         this.tempPolygonGeometry = this.newProperty.geometry;
         this.tempPolygonArea = this.newProperty.area;
       }
     } else if (this.selectedMapMode === 'pin') {
-      // Só salva se tiver algo válido
       if (this.newProperty.geometry && this.newProperty.geometry.type === 'Point' && this.newProperty.lat) {
         this.tempPinGeometry = this.newProperty.geometry;
         this.tempPinArea = this.manualAreaInput;
@@ -259,10 +252,7 @@ export class PropertyCreateComponent implements OnInit {
       }
     }
 
-    // Troca o modo
     this.selectedMapMode = newMode;
-
-    // Limpa a tela
     this.isValidGeometry = false;
     this.isMapConfirmed = false;
     this.draw.deleteAll();
@@ -272,14 +262,12 @@ export class PropertyCreateComponent implements OnInit {
     const drawBtn = document.querySelector('.mapbox-gl-draw_ctrl-draw-group');
     if (drawBtn) drawBtn.classList.remove('highlight-draw-btn');
 
-    // 2. DEPOIS DE TROCAR: TENTA RESTAURAR DA MEMÓRIA
     if (this.selectedMapMode === 'draw') {
       this.manualAreaInput = null;
 
       setTimeout(() => {
         this.draw.changeMode('draw_polygon');
 
-        // Restaura Polígono se existir no backup
         if (this.tempPolygonGeometry) {
           this.draw.add(this.tempPolygonGeometry);
           this.newProperty.geometry = this.tempPolygonGeometry;
@@ -289,7 +277,6 @@ export class PropertyCreateComponent implements OnInit {
           const center = turf.centroid(this.tempPolygonGeometry);
           this.map.flyTo({ center: center.geometry.coordinates as [number, number] });
         } else {
-          // Se não tem backup, zera os dados para começar limpo
           this.newProperty.area = 0;
           this.newProperty.geometry = null;
         }
@@ -298,10 +285,7 @@ export class PropertyCreateComponent implements OnInit {
       if (!this.tempPolygonGeometry) this.startDrawGuidance();
 
     } else {
-      // Modo PIN
       this.draw.changeMode('simple_select');
-
-      // Restaura PIN se existir no backup
       if (this.tempPinLat && this.tempPinLng) {
         this.manualAreaInput = this.tempPinArea;
         this.newProperty.area = this.tempPinArea;
@@ -311,7 +295,6 @@ export class PropertyCreateComponent implements OnInit {
         this.addPin({ lng: this.tempPinLng, lat: this.tempPinLat } as any, false);
         this.checkPinValidation();
       } else {
-        // Se não tem backup, zera tudo (inclusive área) para forçar digitação
         this.manualAreaInput = null;
         this.newProperty.area = 0;
         this.newProperty.geometry = null;
@@ -342,8 +325,6 @@ export class PropertyCreateComponent implements OnInit {
       this.messageService.add({ severity: 'success', summary: 'Local Definido', detail: 'Informe a área para visualizar o raio.' });
     }
   }
-
-  // --- OUTROS MÉTODOS MANTIDOS (Filter, Save, etc) ---
 
   onAreaManualInput() {
     this.newProperty.area = this.manualAreaInput;
@@ -501,7 +482,6 @@ export class PropertyCreateComponent implements OnInit {
       this.map = undefined!;
     }
 
-    // Limpa backups
     this.tempPolygonGeometry = null;
     this.tempPolygonArea = null;
     this.tempPinGeometry = null;
@@ -528,13 +508,9 @@ export class PropertyCreateComponent implements OnInit {
       if (this.newProperty.geometry) {
         this.isValidGeometry = true;
         this.newProperty.area = parseFloat(this.newProperty.area);
-
-        // --- CORREÇÃO AQUI ---
-        // Verifica se é um polígono com 65 pontos (Padrão do círculo de 64 steps)
         const isPinPolygon = this.newProperty.geometry.type === 'Polygon' &&
           this.newProperty.geometry.coordinates[0].length === 65;
 
-        // Se for Ponto OU for um "Polígono de Pin", ativa o modo PIN
         if (this.newProperty.geometry.type === 'Point' || isPinPolygon) {
           this.selectedMapMode = 'pin';
           this.manualAreaInput = this.newProperty.area;

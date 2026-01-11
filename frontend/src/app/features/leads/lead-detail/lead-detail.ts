@@ -2,16 +2,16 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Lead } from '../../../core/models/lead';
-import { LeadService } from '../../../core/services/lead.service';
-import { PropertyService } from '../../../core/services/property.service';
+import { LeadService } from '../../../core/services/lead';
 import { PRIMENG_MODULES } from '../../../shared/modules/prime-ng-module';
-import { TimeAgoPipe } from '../../../shared/pipes/time-ago.pipe';
 import { SkeletonModule } from 'primeng/skeleton';
 import * as mapboxgl from 'mapbox-gl';
 import * as turf from '@turf/turf';
 import { environment } from 'src/environments/environment';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { PropertyService } from 'src/app/core/services/property';
 
 @Component({
   selector: 'app-lead-detail',
@@ -19,9 +19,9 @@ import { MessageService } from 'primeng/api';
   imports: [
     CommonModule,
     ...PRIMENG_MODULES,
-    TimeAgoPipe,
     SkeletonModule,
-    ToastModule
+    ToastModule,
+    ProgressSpinnerModule
   ],
   providers: [MessageService],
   templateUrl: './lead-detail.html',
@@ -36,7 +36,6 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
   map: mapboxgl.Map | undefined;
   selectedPropId: number | null = null;
 
-  // Contador para evitar loop infinito
   private mapInitAttempts = 0;
 
   constructor(
@@ -75,29 +74,24 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
       this.properties = props.filter(p => p.lead?.id === leadId);
       this.loading = false;
 
-      // 1. Força atualização do HTML para remover o Skeleton e mostrar a div do mapa
       this.cdr.detectChanges();
 
-      // 2. Inicia a tentativa robusta de criar o mapa
       if (this.properties.length > 0) {
-        this.mapInitAttempts = 0; // Reseta tentativas
+        this.mapInitAttempts = 0;
         this.tryInitMap();
       }
     });
   }
 
-  // --- NOVA LÓGICA DE INICIALIZAÇÃO SEGURA ---
   tryInitMap() {
-    // Verifica se a DIV existe no DOM
+
     const container = document.getElementById('mini-map');
 
     if (container) {
-      // Se achou, cria o mapa imediatamente
       this.initMap();
     } else {
-      // Se não achou, incrementa contador e tenta de novo em 100ms
       this.mapInitAttempts++;
-      if (this.mapInitAttempts < 50) { // Tenta por até 5 segundos (50 * 100ms)
+      if (this.mapInitAttempts < 50) {
         setTimeout(() => this.tryInitMap(), 100);
       } else {
         console.warn('Abortando criação do mapa: Container #mini-map não encontrado após 5s.');
@@ -106,7 +100,7 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
   }
 
   initMap() {
-    if (this.map) return; // Evita duplicação
+    if (this.map) return;
 
     this.map = new mapboxgl.Map({
       container: 'mini-map',
@@ -118,7 +112,7 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
     this.map.addControl(new mapboxgl.NavigationControl());
 
     this.map.on('load', () => {
-      this.map?.resize(); // Garante o tamanho correto
+      this.map?.resize();
       this.addMarkersAndFitBounds();
     });
   }
@@ -130,19 +124,15 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
     let hasValidBounds = false;
 
     this.properties.forEach(prop => {
-      // 1. Desenha Polígono (Se não for Ponto)
+
       if (prop.geometry && prop.geometry.type !== 'Point') {
         this.addPolygon(prop);
-
-        // Adiciona a área do polígono ao zoom
         const bbox = turf.bbox(prop.geometry);
         bounds.extend([bbox[0], bbox[1]] as any);
         bounds.extend([bbox[2], bbox[3]] as any);
         hasValidBounds = true;
       }
 
-      // 2. Desenha Pin (Sempre desenha pin para identificar, ou fallback se for Point)
-      // Tenta pegar lat/lng salvos ou extrair do geometry
       let lat = prop.lat;
       let lng = prop.lng;
 
@@ -151,7 +141,6 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
           lng = prop.geometry.coordinates[0];
           lat = prop.geometry.coordinates[1];
         } else {
-          // Se for poligono e não tiver lat/lng salvo, calcula centro
           const center = turf.centroid(prop.geometry);
           lng = center.geometry.coordinates[0];
           lat = center.geometry.coordinates[1];
@@ -165,7 +154,6 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Ajusta o zoom para caber todos os pins/polígonos
     if (hasValidBounds) {
       this.map.fitBounds(bounds, { padding: 50, maxZoom: 15 });
     }
@@ -178,8 +166,6 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
     el.className = 'custom-marker';
     const color = this.getColorByCulture(prop.culture);
     el.style.backgroundColor = color;
-
-    // Estilo da bolinha do pin
     el.style.width = '24px';
     el.style.height = '24px';
     el.style.borderRadius = '50%';
@@ -205,11 +191,10 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
     if (!this.map) return;
 
     const id = `poly-${prop.id}`;
-    if (this.map.getSource(id)) return; // Evita erro se já existir
+    if (this.map.getSource(id)) return;
 
     this.map.addSource(id, { type: 'geojson', data: prop.geometry });
 
-    // Camada de preenchimento (cor da cultura)
     this.map.addLayer({
       id: id, type: 'fill', source: id,
       paint: {
@@ -218,7 +203,6 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Camada de contorno (branco)
     this.map.addLayer({
       id: id + '-line', type: 'line', source: id,
       paint: { 'line-color': '#fff', 'line-width': 2 }
@@ -228,7 +212,7 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
   focusOnMap(prop: any) {
     this.selectedPropId = prop.id;
 
-    if (!this.map) return; // Proteção contra erro de mapa não carregado
+    if (!this.map) return;
 
     if (prop.geometry) {
       if (prop.geometry.type === 'Point') {

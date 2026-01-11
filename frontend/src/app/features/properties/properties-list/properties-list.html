@@ -1,95 +1,121 @@
-<p-confirmDialog></p-confirmDialog> 
+<p-confirmDialog></p-confirmDialog>
 <p-toast></p-toast>
 
 <div class="p-4 fadein animation-duration-500">
-  
   <div class="mb-4">
     <h1 class="text-2xl font-bold m-0 text-900">Propriedades Rurais</h1>
-    <span class="text-gray-500">
-        {{ filteredProperties.length }} propriedades encontradas
-    </span>
+    <span class="text-gray-500"> {{ filteredProperties.length }} propriedades encontradas </span>
   </div>
 
-  <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-3">
-    <button pButton 
-        label="Nova Propriedade" 
-        icon="pi pi-plus" 
-        class="p-button-success ml-auto"
-        (click)="openNewPropertyModal()">
-    </button>
+  <div class="flex flex-column md:flex-row justify-content-between align-items-center mb-4 gap-1">
+    <button
+      button
+      pButton
+      label="Nova Propriedade"
+      icon="pi pi-plus"
+      class="p-button-success ml-auto"
+      (click)="openNewPropertyModal()"
+    ></button>
   </div>
 
-  <app-property-filter 
-      [properties]="properties" 
-      (onFilterChange)="handleFilterChange($event)">
+  <app-property-filter [properties]="properties" (onFilterChange)="handleFilterChange($event)">
   </app-property-filter>
 
-  <div class="grid" *ngIf="viewMode === 'list'">
-    
-    <div class="col-12 md:col-6 lg:col-4" *ngFor="let prop of filteredProperties">
-      
-      <div class="surface-card shadow-1 p-3 border-round border-left-3 hover:shadow-3 transition-all cursor-default h-full flex flex-column relative"
-           [ngClass]="{
-             'border-green-500': prop.culture === 'Soja',
-             'border-yellow-500': prop.culture === 'Milho',
-             'border-blue-500': prop.culture === 'Algodão'
-           }">
-        
+  <div class="grid mt-2" *ngIf="filteredProperties.length > 0 && viewMode === 'list'">
+    <div class="col-12 md:col-6 lg:col-4" *ngFor="let prop of pagedProperties">
+      <div
+        class="surface-card shadow-1 p-3 border-round hover:shadow-3 transition-all cursor-default h-full flex flex-column relative"
+        [ngClass]="{
+          'border-green-500': prop.culture === 'Soja',
+          'border-yellow-500': prop.culture === 'Milho',
+          'border-blue-500': prop.culture === 'Algodão'
+        }"
+      >
         <div class="flex justify-content-between align-items-start mb-2">
-            
-            <div class="flex gap-2 flex-1 pr-2"> 
-                
-                <span class="font-bold text-lg text-900 cursor-pointer hover:text-green-600 transition-colors underline-hover line-height-2"
-                      (click)="openLeadDetails(prop.lead?.id)"
-                      pTooltip="Ver detalhes do proprietário" tooltipPosition="top">
-                    {{ prop.name }}
-                </span>
+          <div class="flex flex-column gap-1 flex-1 pr-2">
+            <span
+              class="font-bold text-lg text-900 cursor-pointer hover:text-green-600 transition-colors underline-hover line-height-2"
+              (click)="openLeadDetails(prop.lead?.id)"
+              pTooltip="Ver detalhes do proprietário"
+              tooltipPosition="top"
+            >
+              {{ prop.name }}
+            </span>
+            <div
+              class="text-sm font-bold text-green-800 cursor-pointer hover:underline"
+              (click)="openLeadDetails(prop.lead?.id)"
+            >
+              <i class="pi pi-user mr-1"></i> {{ prop.lead?.name || 'Proprietário não informado' }}
             </div>
+          </div>
 
-            <div class="flex gap-1 flex-shrink-0"> <button pButton icon="pi pi-pencil" 
-                        class="p-button-rounded p-button-text p-button-secondary p-button-sm" 
-                        pTooltip="Editar" tooltipPosition="left"
-                        (click)="editProperty(prop)">
-                </button>
-                <button pButton icon="pi pi-trash" 
-                        class="p-button-rounded p-button-text p-button-danger p-button-sm" 
-                        pTooltip="Excluir" tooltipPosition="left"
-                        (click)="deleteProperty($event, prop.id)">
-                </button>
-            </div>
-
-        </div>
-        <div class="text-sm font-bold text-green-800 mb-2 cursor-pointer hover:underline"
-             (click)="openLeadDetails(prop.lead?.id)">
-             <i class="pi pi-user mr-1"></i> {{ prop.lead?.name || 'Proprietário não informado' }}
-        </div>
-
-        <div class="text-sm text-500 mb-3 flex gap-3">
-            <span><i class="pi pi-map-marker mr-1"></i> {{ prop.city }}</span>
-            <span><i class="pi pi-tag mr-1"></i> {{ prop.area }} ha</span>
+          <div class="flex gap-1 flex-shrink-0">
+            <button
+              pButton
+              icon="pi pi-pencil"
+              class="p-button-rounded p-button-text p-button-secondary p-button-sm"
+              pTooltip="Editar"
+              (click)="editProperty(prop)"
+            ></button>
+            <button
+              pButton
+              icon="pi pi-trash"
+              class="p-button-rounded p-button-text p-button-danger p-button-sm"
+              pTooltip="Excluir"
+              (click)="deleteProperty($event, prop.id)"
+            ></button>
+          </div>
         </div>
 
-        <div class="mb-3">
+        <div class="text-sm text-500 mb-3">
+          <span><i class="pi pi-map-marker mr-1"></i> {{ prop.city }}</span>
+        </div>
+
+        <div class="flex flex-column gap-2 mb-4">
+          <div class="area-pill align-self-start">
+            <i class="pi pi-box"></i>
+            <span>{{ prop.area }} ha</span>
+          </div>
+          <div class="align-self-start">
             <p-tag [value]="prop.culture" [severity]="getCultureSeverity(prop.culture)"></p-tag>
+          </div>
         </div>
 
-        <div class="text-sm text-600 mt-auto line-height-3 pt-2" *ngIf="prop.obs">
-            <i class="pi pi-comment mr-1 text-gray-400"></i> {{ prop.obs }}
+        <div
+          class="mt-auto pt-2 border-top-1 surface-border flex justify-content-between align-items-end"
+        >
+          <div class="text-sm text-600 line-height-3 pr-2" *ngIf="prop.obs">
+            {{ prop.obs }}
+          </div>
+          <div *ngIf="!prop.obs"></div>
+          <span
+            class="text-500 text-xs flex align-items-center gap-1 white-space-nowrap"
+            pTooltip="Data de Criação"
+          >
+            <i class="pi pi-calendar text-xs"></i> {{ prop.createdAt | date : 'dd/MM/yy' }}
+          </span>
         </div>
-
       </div>
-      
-    </div>
-
-    <div class="col-12 text-center p-5" *ngIf="filteredProperties.length === 0">
-        <div class="flex flex-column align-items-center">
-            <i class="pi pi-search text-5xl text-gray-300 mb-3"></i>
-            <span class="text-xl font-medium text-gray-600">Nenhuma propriedade encontrada</span>
-            <span class="text-gray-500">Tente ajustar os filtros ou a busca.</span>
-        </div>
     </div>
   </div>
 
+  <div class="col-12 mt-4" *ngIf="filteredProperties.length > 0">
+    <p-paginator
+      [first]="first"
+      [rows]="rows"
+      [totalRecords]="filteredProperties.length"
+      [rowsPerPageOptions]="[12, 24, 48]"
+      (onPageChange)="onPageChange($event)"
+    ></p-paginator>
+  </div>
+
+  <div *ngIf="filteredProperties.length === 0 && !loading" class="empty-state-container mt-4">
+    <div class="empty-state-content">
+      <i class="pi pi-search"></i>
+      <h2>Nenhuma propriedade encontrada</h2>
+      <p>Não encontramos resultados para sua busca ou ainda não há propriedades cadastradas.</p>
+    </div>
+  </div>
 </div>
 
 <app-property-create (onSave)="loadProperties()"></app-property-create>

@@ -1,108 +1,133 @@
 <p-toast></p-toast>
 
-<p-dialog 
-    [header]="isEditMode ? 'Editar Lead' : 'Criar Lead'" 
-    [(visible)]="visible" 
-    [modal]="true" 
-    [style]="{width: '50vw'}" 
-    [breakpoints]="{'960px': '75vw', '640px': '90vw'}"
-    [draggable]="false" 
-    [resizable]="false"
-    [focusOnShow]="false"> <div class="p-fluid grid formgrid">
-        
-        <div class="field col-12">
-            <label for="name" class="font-bold text-900">Nome Completo *</label>
-            <input pInputText id="name" [(ngModel)]="newLead.name" placeholder="Ex: João da Silva" />
-        </div>
-
-        <div class="field col-12 md:col-6">
-            <label for="cpf" class="font-bold text-900">CPF *</label>
-            <p-inputMask 
-                id="cpf" 
-                mask="999.999.999-99" 
-                [(ngModel)]="newLead.cpf" 
-                placeholder="000.000.000-00"
-                [autoClear]="false">
-            </p-inputMask>
-        </div>
-
-        <div class="field col-12 md:col-6">
-            <label for="phone" class="font-bold text-900">Telefone *</label>
-            <p-inputMask 
-                id="phone" 
-                mask="(99) 99999-9999" 
-                [(ngModel)]="newLead.phone" 
-                placeholder="(00) 00000-0000"
-                [autoClear]="false">
-            </p-inputMask>
-        </div>
-
-        <div class="field col-12">
-            <label for="email" class="font-bold text-900">Email *</label>
-            <input pInputText id="email" [(ngModel)]="newLead.email" placeholder="email@exemplo.com" />
-        </div>
-
-        <div class="field col-12 md:col-6">
-            <label for="city" class="font-bold text-900">Município (MG) *</label>
-            
-            <p-autoComplete 
-                [(ngModel)]="newLead.city" 
-                [suggestions]="filteredCities" 
-                (completeMethod)="filterCity($event)" 
-                field="label" 
-                [dropdown]="true"
-                [completeOnFocus]="true"
-                placeholder="Selecione ou digite..."
-                [forceSelection]="true"
-                appendTo="body">
-            </p-autoComplete>
-        </div>
-
-        <div class="field col-12 md:col-6">
-            <label for="area" class="font-bold text-900">Área (Hectares) *</label>
-            <p-inputNumber 
-                id="area" 
-                [(ngModel)]="newLead.area" 
-                suffix=" ha" 
-                placeholder="0.00"
-                mode="decimal" 
-                [minFractionDigits]="2">
-            </p-inputNumber>
-        </div>
-
-        <div class="field col-12 md:col-6">
-            <label for="status" class="font-medium text-900">Status</label>
-            <p-dropdown 
-                [options]="statusOptions" 
-                [(ngModel)]="newLead.status" 
-                optionLabel="label" 
-                optionValue="value">
-            </p-dropdown>
-        </div>
-
-        <div class="field col-12">
-            <label for="obs" class="font-medium text-900">Observações / Comentários</label>
-            <textarea 
-                pInputTextarea 
-                id="obs" 
-                [(ngModel)]="newLead.obs" 
-                rows="3" 
-                placeholder="Observações sobre o lead...">
-            </textarea>
-        </div>
-
+<p-dialog
+  [header]="isEditMode ? 'Editar Lead' : 'Criar Lead'"
+  [(visible)]="visible"
+  [modal]="true"
+  [style]="{ width: '50vw' }"
+  [breakpoints]="{ '960px': '75vw', '640px': '90vw' }"
+  [draggable]="false"
+  [resizable]="false"
+  [focusOnShow]="false"
+  (onHide)="close()"
+>
+  <div class="p-fluid grid formgrid">
+    <div class="field col-12">
+      <label for="name" class="font-bold text-900">Nome Completo *</label>
+      <input pInputText id="name" [(ngModel)]="newLead.name" />
     </div>
 
-    <ng-template pTemplate="footer">
-        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="close()"></button>
-        <button 
-            pButton 
-            [label]="isEditMode ? 'Salvar Alterações' : 'Criar Lead'" 
-            [icon]="isEditMode ? 'pi pi-save' : 'pi pi-check'"
-            class="p-button-success" 
-            (click)="save()" 
-            [loading]="loading">
-        </button>
-    </ng-template>
+    <div class="field col-12 md:col-6">
+      <label for="cpf" class="font-bold text-900">CPF *</label>
+      <p-inputMask
+        id="cpf"
+        mask="999.999.999-99"
+        [(ngModel)]="newLead.cpf"
+        placeholder="000.000.000-00"
+        [autoClear]="false"
+        [ngClass]="{ 'ng-invalid ng-dirty': cpfInvalid }"
+        (ngModelChange)="cpfInvalid = false"
+      >
+      </p-inputMask>
+      <small *ngIf="cpfInvalid" class="p-error block mt-1">CPF inválido ou já cadastrado.</small>
+    </div>
 
+    <div class="field col-12 md:col-6">
+      <label for="phone" class="font-bold text-900">Telefone *</label>
+      <p-inputMask
+        id="phone"
+        mask="(99) 99999-9999"
+        [(ngModel)]="newLead.phone"
+        placeholder="(00) 00000-0000"
+        [autoClear]="false"
+      >
+      </p-inputMask>
+    </div>
+
+    <div class="field col-12">
+      <label for="email" class="font-bold text-900">Email *</label>
+      <input
+        pInputText
+        id="email"
+        [(ngModel)]="newLead.email"
+        placeholder="email@exemplo.com"
+        [ngClass]="{ 'ng-invalid ng-dirty': emailInvalid }"
+        (input)="emailInvalid = false"
+      />
+      <small *ngIf="emailInvalid" class="p-error block mt-1"
+        >E-mail inválido ou já cadastrado.</small
+      >
+    </div>
+
+    <div class="field col-12 md:col-6">
+      <label for="city" class="font-bold text-900">Município (MG) *</label>
+      <p-autoComplete
+        [(ngModel)]="newLead.city"
+        [suggestions]="filteredCities"
+        (completeMethod)="filterCity($event)"
+        field="label"
+        [dropdown]="true"
+        [completeOnFocus]="true"
+        placeholder="Selecione ou digite..."
+        [forceSelection]="true"
+        appendTo="body"
+      >
+      </p-autoComplete>
+    </div>
+
+    <div class="field col-12 md:col-6">
+      <label for="area" class="font-bold text-900">Área (Hectares) *</label>
+      <p-inputNumber
+        id="area"
+        [(ngModel)]="newLead.area"
+        suffix=" ha"
+        placeholder="0.00"
+        mode="decimal"
+        [minFractionDigits]="2"
+      >
+      </p-inputNumber>
+    </div>
+
+    <div class="field col-12">
+      <label for="status" class="font-bold text-900">Status</label>
+      <p-dropdown
+        [options]="statusOptions"
+        [(ngModel)]="newLead.status"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Selecione o status"
+      >
+      </p-dropdown>
+    </div>
+
+    <div class="field col-12">
+      <label for="obs" class="font-medium text-900">Observações / Comentários</label>
+      <textarea
+        pInputTextarea
+        id="obs"
+        [(ngModel)]="newLead.obs"
+        rows="3"
+        placeholder="Observações sobre o lead..."
+      >
+      </textarea>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button
+      pButton
+      label="Cancelar"
+      icon="pi pi-times"
+      class="p-button-text"
+      (click)="close()"
+    ></button>
+    <button
+      pButton
+      [label]="isEditMode ? 'Salvar Alterações' : 'Criar Lead'"
+      [icon]="isEditMode ? 'pi pi-save' : 'pi pi-check'"
+      class="p-button-success border-round-lg font-bold"
+      (click)="save()"
+      [loading]="loading"
+    ></button>
+  </ng-template>
 </p-dialog>

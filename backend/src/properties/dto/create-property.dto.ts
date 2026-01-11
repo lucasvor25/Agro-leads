@@ -14,7 +14,7 @@ export class CreatePropertyDto {
 
     @IsString()
     @IsNotEmpty({ message: 'O nome da propriedade é obrigatório' })
-    @Transform(({ value }) => value?.trim()) // Remove espaços extras
+    @Transform(({ value }) => value?.trim())
     name: string;
 
     @IsString()

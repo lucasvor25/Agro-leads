@@ -6,7 +6,6 @@ import { InputTextModule as PrimeInputText } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 
-// Interface simples para os filtros
 export interface LeadFilters {
   search?: string;
   status?: string;
@@ -15,15 +14,22 @@ export interface LeadFilters {
 }
 
 @Component({
-  selector: 'app-leads-filter',
-  standalone: true, // Se estiver usando Standalone Components (Angular 14+)
-  imports: [CommonModule, FormsModule, DropdownModule, PrimeInputText, IconFieldModule, InputIconModule],
+  selector: 'app-lead-filter',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    DropdownModule,
+    PrimeInputText,
+    IconFieldModule,
+    InputIconModule
+  ],
   templateUrl: './leads-filter.html',
   styleUrls: ['./leads-filter.css']
 })
 export class LeadsFilterComponent implements OnChanges {
 
-  @Input() leadsData: any[] = []; // Recebe os dados para extrair opções
+  @Input() leadsData: any[] = [];
   @Output() filterChange = new EventEmitter<LeadFilters>();
 
   filters: LeadFilters = {

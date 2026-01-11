@@ -1,10 +1,14 @@
 export interface Property {
     id?: number;
-    leadId: number;
-    nome: string;
-    municipio: string;
-    cultura: string;
+    name: string;
+    city: string;
+    culture: string;
     area: number;
+    geometry?: any;
     obs?: string;
-    geometria?: any; // Para salvar o GeoJSON
+    lat?: number;
+    lng?: number;
+    lead?: any;
+    createdAt?: Date;
+    updatedAt?: Date;
 }

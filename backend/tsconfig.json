@@ -2,8 +2,8 @@
   "compilerOptions": {
     // MUDANÇA PRINCIPAL: Voltar para commonjs (padrão do Nest)
     "module": "commonjs",
-    "moduleResolution": "node", 
-    
+    "moduleResolution": "node",
+
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -13,6 +13,9 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "src/*": ["src/*"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
@@ -20,5 +23,6 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false
-  }
+  },
+  "include": ["src/**/*.ts"]
 }
