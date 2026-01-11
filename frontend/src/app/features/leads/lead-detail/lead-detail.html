@@ -8,12 +8,13 @@
       (click)="goBack()"
     >
       <i class="pi pi-arrow-left text-sm"></i>
+      <span>Voltar para Leads</span>
     </div>
   </div>
 
-  <div class="lead-card mb-4">
-    <div class="flex align-items-center justify-content-between mb-3">
-      <div class="flex align-items-center gap-3">
+  <div class="lead-card mb-5">
+    <div class="lead-header mb-3">
+      <div class="lead-title">
         <i *ngIf="lead.isPriority" class="pi pi-star-fill priority-icon"></i>
         <h2 class="lead-name">{{ lead.name }}</h2>
         <p-tag
@@ -28,42 +29,46 @@
       <span><i class="pi pi-map-marker"></i> {{ lead.city }}</span>
       <span><i class="pi pi-phone"></i> {{ lead.phone }}</span>
       <span><i class="pi pi-envelope"></i> {{ lead.email }}</span>
-      <span
-        ><i class="pi pi-calendar"></i> Criado em {{ lead.createdAt | date : 'dd/MM/yyyy' }}</span
-      >
+      <span>
+        <i class="pi pi-calendar"></i>
+        Criado em {{ lead.createdAt | date : 'dd/MM/yyyy' }}
+      </span>
     </div>
 
     <div class="grid mt-4">
       <div class="col-12 md:col-3">
         <div class="info-box">
-          <span class="info-label">CPF</span>
+          <span class="info-label">CPF:</span>
           <span class="info-value">{{ lead.cpf }}</span>
         </div>
       </div>
+
       <div class="col-12 md:col-3">
         <div class="info-box">
-          <span class="info-label">Área Total</span>
+          <span class="info-label">Área Total:</span>
           <span class="info-value">{{ lead.area }} ha</span>
         </div>
       </div>
+
       <div class="col-12 md:col-3">
         <div class="info-box">
-          <span class="info-label">Propriedades</span>
+          <span class="info-label">Propriedades:</span>
           <span class="info-value">{{ properties.length }}</span>
         </div>
       </div>
+
       <div class="col-12 md:col-3">
         <div class="info-box">
-          <span class="info-label">Atualizado</span>
-          <span class="info-value">{{ lead.updatedAt | date : 'dd/MM/yyyy' }}</span>
+          <span class="info-label">Criado em:</span>
+          <span class="info-value">
+            {{ lead.createdAt | date : 'dd/MM/yyyy' }}
+          </span>
         </div>
       </div>
     </div>
 
     <div class="mt-4">
-      <div class="flex align-items-center gap-2 mb-2">
-        <strong>Comentários</strong>
-      </div>
+      <strong class="text-700 block mb-2">Comentários</strong>
       <div class="comments-box">
         <span *ngIf="lead.obs; else noObs">{{ lead.obs }}</span>
         <ng-template #noObs>
@@ -79,27 +84,31 @@
     </div>
 
     <div class="properties-wrapper">
-      <div class="map-header">
+      <div class="map-header mb-4">
+        <div class="map-title">Localização das Propriedades</div>
         <div id="mini-map" class="mini-map"></div>
       </div>
 
-      <div class="grid p-3">
+      <div class="grid">
         <div class="col-12 md:col-6" *ngFor="let prop of properties">
           <div class="property-card" [ngClass]="{ selected: selectedPropId === prop.id }">
             <div class="flex justify-content-between mb-2">
               <strong>{{ prop.name }}</strong>
             </div>
+
             <div class="property-meta">
               <span><i class="pi pi-map-marker"></i> {{ prop.city }}</span>
               <span><i class="pi pi-tag"></i> {{ prop.area }} ha</span>
             </div>
+
             <p-tag
-              [value]="prop.culture"
               class="mt-2"
+              [value]="prop.culture"
               [severity]="
                 prop.culture === 'Soja' ? 'success' : prop.culture === 'Milho' ? 'warning' : 'info'
               "
             ></p-tag>
+
             <div class="property-obs" *ngIf="prop.obs">
               {{ prop.obs }}
             </div>

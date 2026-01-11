@@ -28,15 +28,15 @@
         [ngClass]="{ 'is-priority': lead.isPriority }"
       >
         <div class="flex justify-content-between align-items-start mb-3">
-          <div class="flex flex-column gap-1" style="max-width: 85%">
+          <div class="flex flex-column gap-1 flex-1 min-w-0">
             <span
               class="lead-name white-space-nowrap overflow-hidden text-overflow-ellipsis"
-              style="max-width: 100%"
               pTooltip="{{ lead.name }}"
               tooltipPosition="top"
             >
               {{ lead.name }}
             </span>
+
             <span
               class="text-500 text-sm font-medium flex align-items-center gap-1"
               *ngIf="lead.cpf"
@@ -45,7 +45,7 @@
             </span>
           </div>
 
-          <div class="flex gap-1 -mt-1 -mr-2">
+          <div class="flex gap-1 -mt-1 -mr-2 flex-shrink-0">
             <button
               pButton
               type="button"
@@ -54,6 +54,7 @@
               (click)="editLead(lead, $event)"
               pTooltip="Editar"
             ></button>
+
             <button
               pButton
               type="button"

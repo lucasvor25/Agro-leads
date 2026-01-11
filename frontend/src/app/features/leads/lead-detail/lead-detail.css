@@ -1,14 +1,27 @@
 .lead-card {
   background: #ffffff;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.lead-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lead-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .lead-name {
-  font-size: 1.8rem;
+  font-size: 1.9rem;
   font-weight: 700;
   margin: 0;
+  color: #111827;
 }
 
 .priority-icon {
@@ -17,6 +30,7 @@
 }
 
 .lead-contacts {
+  margin-top: 8px;
   display: flex;
   flex-wrap: wrap;
   gap: 24px;
@@ -24,29 +38,46 @@
   font-size: 0.95rem;
 }
 
-.info-box,
-.comments-box {
-  background: #ffffff;
-  border: 1px solid #f3f4f6;
-  border-radius: 10px;
-  padding: 16px;
+.lead-contacts span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-box {
+  background: #fafafa;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 16px 18px;
 }
 
 .info-label {
-  font-size: 0.7rem;
-  text-transform: uppercase;
+  font-size: 1rem;
   color: #9ca3af;
+  letter-spacing: 0.04em;
 }
 
 .info-value {
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 2px;
+  margin-left: 3px;
+}
+
+.comments-box {
+  background: #fafafa;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 16px 18px;
+  color: #374151;
+  font-size: 0.95rem;
 }
 
 .map-header {
   position: relative;
   height: 420px;
-  border-radius: 12px;
+  border-radius: 16px;
   overflow: hidden;
 }
 
@@ -54,9 +85,9 @@
   position: absolute;
   top: 16px;
   left: 16px;
-  background: #fff;
+  background: #ffffff;
   padding: 8px 14px;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   font-weight: 600;
   z-index: 10;
@@ -68,9 +99,9 @@
 }
 
 .property-card {
-  background: #fff;
+  background: #ffffff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 16px;
   transition: all 0.2s ease;
 }
@@ -100,11 +131,20 @@
 }
 
 @media (max-width: 768px) {
-  .map-header {
-    height: 300px;
+  .lead-title {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .lead-name {
+    font-size: 1.5rem;
   }
 
   .lead-contacts {
     gap: 12px;
+  }
+
+  .map-header {
+    height: 300px;
   }
 }

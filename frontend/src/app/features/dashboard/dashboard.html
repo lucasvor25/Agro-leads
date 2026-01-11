@@ -166,32 +166,6 @@
         </div>
       </div>
     </div>
-
-    <div class="surface-card p-4 border-round-xl shadow-1">
-      <h3 class="text-lg font-bold text-900 mb-4 font-serif">Resumo por Status</h3>
-      <div class="grid text-center">
-        <div class="col">
-          <div class="text-3xl font-bold text-900">{{ statusSummary['Novo'] || 0 }}</div>
-          <div class="text-sm text-500">Novo</div>
-        </div>
-        <div class="col border-left-1 border-gray-200">
-          <div class="text-3xl font-bold text-900">{{ statusSummary['Contato Inicial'] || 0 }}</div>
-          <div class="text-sm text-500">Contato Inicial</div>
-        </div>
-        <div class="col border-left-1 border-gray-200">
-          <div class="text-3xl font-bold text-900">{{ statusSummary['Em Negociação'] || 0 }}</div>
-          <div class="text-sm text-500">Em Negociação</div>
-        </div>
-        <div class="col border-left-1 border-gray-200">
-          <div class="text-3xl font-bold text-900">{{ statusSummary['Convertido'] || 0 }}</div>
-          <div class="text-sm text-500">Convertido</div>
-        </div>
-        <div class="col border-left-1 border-gray-200">
-          <div class="text-3xl font-bold text-900">{{ statusSummary['Perdido'] || 0 }}</div>
-          <div class="text-sm text-500">Perdido</div>
-        </div>
-      </div>
-    </div>
   </div>
 
   <ng-template #emptyState>
