@@ -13,8 +13,11 @@ export class LeadsService {
     private leadsRepository: Repository<Lead>,
   ) { }
 
-  async create(createLeadDto: CreateLeadDto) {
-    const lead = this.leadsRepository.create(createLeadDto);
+  async create(createLeadDto: CreateLeadDto, userId: number) {
+    const lead = this.leadsRepository.create({
+      ...createLeadDto,
+      user_id: userId,
+    });
 
     if (lead.area > 100) {
       lead.isPriority = true;
@@ -29,11 +32,14 @@ export class LeadsService {
     }
   }
 
-  async findAll(filterDto: GetLeadsFilterDto): Promise<Lead[]> {
+  async findAll(filterDto: GetLeadsFilterDto, userId: number): Promise<Lead[]> {
     const { search, status, city, priority } = filterDto;
     const query = this.leadsRepository.createQueryBuilder('lead');
 
     query.leftJoinAndSelect('lead.properties', 'properties');
+
+    // Filtro principal: só dados do usuário autenticado
+    query.where('lead.user_id = :userId', { userId });
 
     if (search) {
       query.andWhere(
@@ -64,26 +70,25 @@ export class LeadsService {
     return await query.getMany();
   }
 
-  findOne(id: number) {
+  findOne(id: number, userId: number) {
     return this.leadsRepository.findOne({
-      where: { id },
+      where: { id, user_id: userId },
       relations: ['properties'],
     });
   }
 
-  async update(id: number, updateLeadDto: UpdateLeadDto) {
+  async update(id: number, updateLeadDto: UpdateLeadDto, userId: number) {
     const { properties, id: leadId, ...leadData } = updateLeadDto as any;
 
     try {
-
-      return await this.leadsRepository.update(id, leadData);
+      return await this.leadsRepository.update({ id, user_id: userId }, leadData);
     } catch (error) {
       this.handleDBExceptions(error);
     }
   }
 
-  remove(id: number) {
-    return this.leadsRepository.delete(id);
+  remove(id: number, userId: number) {
+    return this.leadsRepository.delete({ id, user_id: userId });
   }
 
   private handleDBExceptions(error: any) {

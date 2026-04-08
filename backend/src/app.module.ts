@@ -5,6 +5,9 @@ import { LeadsModule } from './leads/leads.module';
 import { Lead } from './leads/entities/lead.entity';
 import { PropertiesModule } from './properties/properties.module';
 import { Property } from './properties/entities/property.entity';
+import { UsersModule } from './users/users.module';
+import { User } from './users/entities/user.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -17,15 +20,17 @@ import { Property } from './properties/entities/property.entity';
         username: process.env.DB_USERNAME,
         password: process.env.DB_PASSWORD,
         database: process.env.DB_NAME,
-        entities: [Lead, Property],
+        entities: [Lead, Property, User],
         migrations: ['dist/db/migrations/*.js'],
-        synchronize: false,
-        migrationsRun: true,
+        synchronize: true,   // cria tabelas automaticamente em dev
+        migrationsRun: false,
         ssl: false,
       }),
     }),
     LeadsModule,
     PropertiesModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

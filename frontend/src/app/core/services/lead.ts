@@ -3,9 +3,10 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Lead } from '../models/lead';
 import { map } from 'rxjs/operators';
-@Injectable({
-  providedIn: 'root'
-})
+
+const OPTIONS = { withCredentials: true };
+
+@Injectable({ providedIn: 'root' })
 export class LeadService {
 
   private apiUrl = '/api/leads';
@@ -22,23 +23,23 @@ export class LeadService {
       if (filters.priority && filters.priority !== 'Todos') params = params.set('priority', filters.priority);
     }
 
-    return this.http.get<Lead[]>(this.apiUrl, { params });
+    return this.http.get<Lead[]>(this.apiUrl, { ...OPTIONS, params });
   }
 
   create(lead: any): Observable<Lead> {
-    return this.http.post<Lead>(this.apiUrl, lead);
+    return this.http.post<Lead>(this.apiUrl, lead, OPTIONS);
   }
 
   getLeadById(id: number): Observable<Lead> {
-    return this.http.get<Lead>(`${this.apiUrl}/${id}`);
+    return this.http.get<Lead>(`${this.apiUrl}/${id}`, OPTIONS);
   }
 
   update(id: number, lead: any): Observable<Lead> {
-    return this.http.patch<Lead>(`${this.apiUrl}/${id}`, lead);
+    return this.http.patch<Lead>(`${this.apiUrl}/${id}`, lead, OPTIONS);
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, OPTIONS);
   }
 
   getCitiesMG(): Observable<any[]> {

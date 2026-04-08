@@ -1,4 +1,10 @@
-<div class="layout-wrapper flex h-screen bg-gray-50">
+<!-- Modo Auth: apenas o router-outlet sem layout -->
+<ng-container *ngIf="isAuthPage">
+  <router-outlet></router-outlet>
+</ng-container>
+
+<!-- Modo App: layout completo com sidebar -->
+<div class="layout-wrapper flex h-screen bg-gray-50" *ngIf="!isAuthPage">
   <aside
     class="sidebar flex-shrink-0 flex flex-column transition-all duration-300 border-right-1 border-gray-800"
     [ngClass]="{ 'w-16rem': !collapsed, 'w-5rem': collapsed }"
@@ -60,7 +66,25 @@
       </ul>
     </nav>
 
-    <div class="p-3 mt-auto border-top-1 border-gray-700">
+    <!-- Usuário + Logout -->
+    <div class="p-3 border-top-1 border-gray-700">
+      <div *ngIf="currentUser && !collapsed" class="mb-2 px-1">
+        <p class="text-xs text-gray-400 m-0 white-space-nowrap overflow-hidden text-overflow-ellipsis">
+          {{ currentUser.name }}
+        </p>
+        <p class="text-xs text-gray-600 m-0 white-space-nowrap overflow-hidden text-overflow-ellipsis">
+          {{ currentUser.email }}
+        </p>
+      </div>
+      <button
+        (click)="logout()"
+        [title]="collapsed ? 'Sair' : ''"
+        class="w-full bg-transparent border-1 border-gray-600 text-gray-300 hover:text-red-400 hover:border-red-400 p-2 border-round cursor-pointer flex align-items-center transition-colors mb-2"
+        [ngClass]="collapsed ? 'justify-content-center' : 'gap-2'"
+      >
+        <i class="pi pi-sign-out"></i>
+        <span *ngIf="!collapsed" class="text-sm">Sair</span>
+      </button>
       <button
         (click)="toggleSidebar()"
         class="w-full bg-transparent border-1 border-gray-600 text-gray-300 hover:text-white hover:border-white p-2 border-round cursor-pointer flex align-items-center justify-content-center transition-colors"

@@ -1,5 +1,6 @@
 import { Lead } from 'src/leads/entities/lead.entity';
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('properties')
 export class Property {
@@ -38,4 +39,11 @@ export class Property {
 
     @Column('decimal', { precision: 10, scale: 6, nullable: true })
     lng: number;
+
+    @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'user_id' })
+    user?: User;
+
+    @Column({ nullable: true })
+    user_id?: number;
 }

@@ -15,46 +15,50 @@ export class PropertiesService {
     private leadRepository: Repository<Lead>,
   ) { }
 
-  async create(createPropertyDto: CreatePropertyDto) {
+  async create(createPropertyDto: CreatePropertyDto, userId: number) {
     const { leadId, ...data } = createPropertyDto;
 
-    const lead = await this.leadRepository.findOne({ where: { id: leadId } });
+    // Garante que o lead pertence ao usuário autenticado
+    const lead = await this.leadRepository.findOne({ where: { id: leadId, user_id: userId } });
     if (!lead) {
-      throw new Error('Lead não encontrado');
+      throw new NotFoundException('Lead não encontrado');
     }
 
     const property = this.propertyRepository.create({
       ...data,
-      lead: lead
+      lead,
+      user_id: userId,
     });
 
     return this.propertyRepository.save(property);
   }
 
-  findAll() {
-
+  findAll(userId: number) {
     return this.propertyRepository.find({
+      where: { user_id: userId },
       relations: ['lead'],
-      order: { id: 'DESC' }
+      order: { id: 'DESC' },
     });
   }
 
-  findOne(id: number) {
-    return this.propertyRepository.findOne({ where: { id }, relations: ['lead'] });
+  findOne(id: number, userId: number) {
+    return this.propertyRepository.findOne({
+      where: { id, user_id: userId },
+      relations: ['lead'],
+    });
   }
 
-  async update(id: number, updatePropertyDto: UpdatePropertyDto) {
-
+  async update(id: number, updatePropertyDto: UpdatePropertyDto, userId: number) {
     const { leadId, ...data } = updatePropertyDto;
 
-    const property = await this.propertyRepository.findOne({ where: { id } });
+    const property = await this.propertyRepository.findOne({ where: { id, user_id: userId } });
 
     if (!property) {
       throw new NotFoundException(`Propriedade com ID ${id} não encontrada`);
     }
 
     if (leadId) {
-      const lead = await this.leadRepository.findOne({ where: { id: leadId } });
+      const lead = await this.leadRepository.findOne({ where: { id: leadId, user_id: userId } });
       if (!lead) {
         throw new NotFoundException('Novo Lead informado não encontrado');
       }
@@ -66,9 +70,8 @@ export class PropertiesService {
     return this.propertyRepository.save(property);
   }
 
-  async remove(id: number) {
-
-    const result = await this.propertyRepository.delete(id);
+  async remove(id: number, userId: number) {
+    const result = await this.propertyRepository.delete({ id, user_id: userId });
 
     if (result.affected === 0) {
       throw new NotFoundException(`Propriedade com ID ${id} não encontrada para exclusão`);

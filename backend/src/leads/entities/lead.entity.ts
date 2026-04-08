@@ -1,5 +1,6 @@
 import { Property } from 'src/properties/entities/property.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { User } from 'src/users/entities/user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne, JoinColumn } from 'typeorm';
 
 @Entity('leads')
 export class Lead {
@@ -44,4 +45,11 @@ export class Lead {
 
     @OneToMany(() => Property, (property) => property.lead)
     properties?: Property[];
+
+    @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
+    @JoinColumn({ name: 'user_id' })
+    user?: User;
+
+    @Column({ nullable: true })
+    user_id?: number;
 }
