@@ -11,7 +11,6 @@ export const authGuard: CanActivateFn = () => {
     return true;
   }
 
-  // Tenta carregar o usuário via cookie (para recarregamento de página)
   return auth.loadMe().pipe(
     map(() => true),
     catchError(() => {
