@@ -11,10 +11,7 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api');
 
-  // Adiciona Helmet para headers de segurança HTTP (CSP, X-Powered-By, etc)
   app.use(helmet());
-
-  // Cookie parser — necessário para ler os cookies HttpOnly
   app.use(cookieParser());
 
   app.useGlobalPipes(new ValidationPipe({

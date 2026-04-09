@@ -24,7 +24,6 @@ export class LoggerService {
               time: logEvent.ts
             };
             
-            // Usar fetch com keepalive para melhor consistência em SPAs
             fetch(url, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

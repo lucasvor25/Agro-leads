@@ -41,7 +41,6 @@ export class LeadsService {
 
     query.leftJoinAndSelect('lead.properties', 'properties');
 
-    // Filtro principal: só dados do usuário autenticado
     query.where('lead.user_id = :userId', { userId });
 
     if (search) {

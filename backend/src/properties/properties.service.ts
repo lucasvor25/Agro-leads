@@ -20,7 +20,6 @@ export class PropertiesService {
   async create(createPropertyDto: CreatePropertyDto, userId: number) {
     const { leadId, ...data } = createPropertyDto;
 
-    // Garante que o lead pertence ao usuário autenticado
     const lead = await this.leadRepository.findOne({ where: { id: leadId, user_id: userId } });
     if (!lead) {
       this.logger.warn(`Tentativa de adicionar propriedade a lead não encontrado (ID: ${leadId})`);

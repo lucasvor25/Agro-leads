@@ -4,7 +4,6 @@ import { Controller, Post, Body, Logger, HttpCode } from '@nestjs/common';
 export class LogsController {
   private readonly logger = new Logger(LogsController.name);
 
-  // Endpoint para receber logs do frontend (via pino browser transmit)
   @Post()
   @HttpCode(204)
   receiveClientLogs(@Body() body: any) {

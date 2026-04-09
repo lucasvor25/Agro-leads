@@ -16,7 +16,7 @@ import { LogsController } from './logs.controller';
 @Module({
   imports: [
     ThrottlerModule.forRoot([{
-      ttl: 900000, // 15 minutos
+      ttl: 900000,
       limit: 100,
     }]),
     LoggerModule.forRoot({

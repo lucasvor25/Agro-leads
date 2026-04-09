@@ -11,6 +11,5 @@ export const securityInterceptor: HttpInterceptorFn = (req, next) => {
     return next(secureReq);
   }
 
-  // Passa a requisição externa limpa, sem credenciais
   return next(req);
 };
