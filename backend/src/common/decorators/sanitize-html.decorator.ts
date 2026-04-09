@@ -8,8 +8,8 @@ export function SanitizeHtml(options?: sanitizeHtml.IOptions) {
     }
 
     const defaultOptions: sanitizeHtml.IOptions = {
-      allowedTags: [], // Remove all tags by default
-      allowedAttributes: {}, // Remove all attributes
+      allowedTags: [],
+      allowedAttributes: {},
     };
 
     return sanitizeHtml(params.value, options || defaultOptions);

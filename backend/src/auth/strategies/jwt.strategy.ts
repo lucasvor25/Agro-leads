@@ -7,7 +7,7 @@ import { Request } from 'express';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({
-      // Extrai o JWT do cookie HttpOnly
+
       jwtFromRequest: ExtractJwt.fromExtractors([
         (req: Request) => {
           return req?.cookies?.jwt ?? null;
