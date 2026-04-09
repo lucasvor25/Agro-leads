@@ -1,4 +1,4 @@
-import { Injectable, ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Brackets } from 'typeorm';
 import { Lead } from './entities/lead.entity';
@@ -8,6 +8,8 @@ import { GetLeadsFilterDto } from './dto/get-leads-filter.dto';
 
 @Injectable()
 export class LeadsService {
+  private readonly logger = new Logger(LeadsService.name);
+
   constructor(
     @InjectRepository(Lead)
     private leadsRepository: Repository<Lead>,
@@ -26,14 +28,15 @@ export class LeadsService {
     }
 
     try {
+      this.logger.log(`Criando lead: ${lead.name}`);
       return await this.leadsRepository.save(lead);
     } catch (error) {
       this.handleDBExceptions(error);
     }
   }
 
-  async findAll(filterDto: GetLeadsFilterDto, userId: number): Promise<Lead[]> {
-    const { search, status, city, priority } = filterDto;
+  async findAll(filterDto: GetLeadsFilterDto, userId: number): Promise<any> {
+    const { search, status, city, priority, page = 1, limit = 10 } = filterDto;
     const query = this.leadsRepository.createQueryBuilder('lead');
 
     query.leftJoinAndSelect('lead.properties', 'properties');
@@ -67,7 +70,21 @@ export class LeadsService {
     query.addOrderBy('lead.area', 'DESC');
     query.addOrderBy('lead.createdAt', 'DESC');
 
-    return await query.getMany();
+    query.skip((page - 1) * limit);
+    query.take(limit);
+
+    const [data, totalItems] = await query.getManyAndCount();
+
+    return {
+      data,
+      meta: {
+        totalItems,
+        itemCount: data.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      },
+    };
   }
 
   findOne(id: number, userId: number) {
@@ -102,7 +119,7 @@ export class LeadsService {
       throw new ConflictException('Registro duplicado (CPF ou E-mail).');
     }
 
-    console.error(error);
+    this.logger.error('Erro ao processar a requisição no banco de dados', error.stack, { error });
 
     throw new InternalServerErrorException('Erro ao processar a requisição no banco de dados.');
   }

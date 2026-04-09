@@ -2,7 +2,7 @@
   <div class="mb-5 flex align-items-center justify-content-between">
     <div>
       <h1 class="text-3xl font-bold m-0 text-900 font-serif">Leads</h1>
-      <span class="text-gray-500 font-medium">{{ leads.length }} leads encontrados</span>
+      <span class="text-gray-500 font-medium">{{ totalRecords }} leads encontrados</span>
     </div>
 
     <button
@@ -21,7 +21,7 @@
   <app-lead-create (onSave)="onLeadCreated()"></app-lead-create>
 
   <div class="grid mt-5" *ngIf="leads.length > 0">
-    <div class="col-12 md:col-6 lg:col-4 xl:col-3" *ngFor="let lead of visibleLeads">
+    <div class="col-12 md:col-6 lg:col-4 xl:col-3" *ngFor="let lead of leads">
       <div
         (click)="viewDetails(lead.id)"
         class="lead-card cursor-pointer h-full flex flex-column relative"
@@ -111,7 +111,7 @@
     *ngIf="leads.length > 0"
     [first]="first"
     [rows]="rows"
-    [totalRecords]="leads.length"
+    [totalRecords]="totalRecords"
     [rowsPerPageOptions]="[12, 24, 48]"
     (onPageChange)="onPageChange($event)"
   ></p-paginator>

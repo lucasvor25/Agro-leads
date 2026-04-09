@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Lead } from '../../../core/models/lead';
 import { LeadService } from '../../../core/services/lead';
+import { LoggerService } from 'src/app/core/services/logger.service';
 import { PRIMENG_MODULES } from '../../../shared/modules/prime-ng-module';
 import { LeadFilters, LeadsFilterComponent } from '../leads-filter/leads-filter';
 import { LeadCreateComponent } from '../lead-create/lead-create';
@@ -36,43 +37,46 @@ export class LeadListComponent implements OnInit {
 
     first: number = 0;
     rows: number = 12;
+    totalRecords: number = 0;
+    currentFilters?: LeadFilters;
 
-    newLead: any = {
+    newLead: Partial<Lead> & { culture?: string; area?: number | null } = {
         name: '', email: '', cpf: '', phone: '', city: '',
-        status: 'Novo', area: null, culture: '', obs: ''
+        status: 'Novo', area: undefined, culture: '', obs: ''
     };
 
     constructor(
         private router: Router,
-        private leadService: LeadService
+        private leadService: LeadService,
+        private logger: LoggerService
     ) { }
 
     ngOnInit() {
         this.loadLeads();
     }
 
-    get visibleLeads(): Lead[] {
-        if (!this.leads) return [];
-        return this.leads.slice(this.first, this.first + this.rows);
-    }
-
-    onPageChange(event: any) {
-        this.first = event.first;
-        this.rows = event.rows;
+    onPageChange(event: { first?: number, rows?: number }) {
+        this.first = event.first || 0;
+        this.rows = event.rows || 12;
+        const page = Math.floor(this.first / this.rows) + 1;
+        this.loadLeads(this.currentFilters, page, this.rows);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    loadLeads(filters?: LeadFilters) {
-        this.leadService.getLeads(filters).subscribe({
-            next: (dados) => {
-                this.leads = dados;
-                this.first = 0;
+    loadLeads(filters?: LeadFilters, page: number = 1, limit?: number) {
+        const queryParams = { ...filters, page, limit: limit || this.rows };
+        this.leadService.getLeads(queryParams).subscribe({
+            next: (response) => {
+                this.leads = response.data;
+                this.totalRecords = response.meta.totalItems;
             }
         });
     }
 
     handleFilterChange(filters: LeadFilters) {
-        this.loadLeads(filters);
+        this.currentFilters = filters;
+        this.first = 0;
+        this.loadLeads(filters, 1, this.rows);
     }
 
     viewDetails(id: number) {
@@ -95,7 +99,7 @@ export class LeadListComponent implements OnInit {
                 next: () => {
                     this.leads = this.leads.filter(l => l.id !== lead.id);
                 },
-                error: (err) => { console.error(err); alert('Erro ao excluir.'); }
+                error: (err) => { this.logger.error('Erro ao excluir lead', err); alert('Erro ao excluir.'); }
             });
         }
     }
@@ -110,7 +114,7 @@ export class LeadListComponent implements OnInit {
     }
 
     resetForm() {
-        this.newLead = { name: '', email: '', cpf: '', phone: '', city: '', status: 'Novo', area: null, culture: '', obs: '' };
+        this.newLead = { name: '', email: '', cpf: '', phone: '', city: '', status: 'Novo', area: undefined, culture: '', obs: '' };
     }
 
     getStatusSeverity(status: string): "success" | "info" | "warning" | "danger" | undefined {

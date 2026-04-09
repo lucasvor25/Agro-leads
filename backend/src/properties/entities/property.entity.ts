@@ -19,7 +19,7 @@ export class Property {
     @Column('decimal', { precision: 10, scale: 2 })
     area: number;
 
-    @Column({ type: 'jsonb', nullable: true })
+    @Column({ type: 'geometry', spatialFeatureType: 'Geometry', srid: 4326, nullable: true })
     geometry: any;
 
     @Column({ type: 'text', nullable: true })
@@ -34,11 +34,7 @@ export class Property {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @Column('decimal', { precision: 10, scale: 6, nullable: true })
-    lat: number;
 
-    @Column('decimal', { precision: 10, scale: 6, nullable: true })
-    lng: number;
 
     @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn({ name: 'user_id' })

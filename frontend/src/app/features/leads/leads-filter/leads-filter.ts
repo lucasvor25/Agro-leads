@@ -5,6 +5,8 @@ import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule as PrimeInputText } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { Lead } from 'src/app/core/models/lead';
+import { DropdownOption } from 'src/app/core/models/common';
 
 export interface LeadFilters {
   search?: string;
@@ -29,7 +31,7 @@ export interface LeadFilters {
 })
 export class LeadsFilterComponent implements OnChanges {
 
-  @Input() leadsData: any[] = [];
+  @Input() leadsData: Lead[] = [];
   @Output() filterChange = new EventEmitter<LeadFilters>();
 
   filters: LeadFilters = {
@@ -39,8 +41,8 @@ export class LeadsFilterComponent implements OnChanges {
     priority: 'Todos'
   };
 
-  statusOptions: any[] = [{ label: 'Todos Status', value: 'Todos' }];
-  cityOptions: any[] = [{ label: 'Todos Municípios', value: 'Todos' }];
+  statusOptions: DropdownOption[] = [{ label: 'Todos Status', value: 'Todos' }];
+  cityOptions: DropdownOption[] = [{ label: 'Todos Municípios', value: 'Todos' }];
 
   priorityOptions = [
     { label: 'Todos', value: 'Todos' },
@@ -49,7 +51,7 @@ export class LeadsFilterComponent implements OnChanges {
   ];
 
   private optionsLoaded = false;
-  private searchTimeout: any;
+  private searchTimeout: ReturnType<typeof setTimeout> | undefined;
 
   ngOnChanges(changes: SimpleChanges): void {
 

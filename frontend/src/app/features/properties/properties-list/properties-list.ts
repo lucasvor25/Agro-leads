@@ -7,12 +7,15 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { PaginatorModule } from 'primeng/paginator';
 import * as mapboxgl from 'mapbox-gl';
+import * as turf from '@turf/turf';
 
 import { PRIMENG_MODULES } from '../../../shared/modules/prime-ng-module';
 import { environment } from 'src/environments/environment';
 import { PropertyCreateComponent } from '../property-create/property-create';
 import { PropertiesFilterComponent, PropertyFilters } from '../property-filter/property-filter';
 import { PropertyService } from 'src/app/core/services/property';
+import { LoggerService } from 'src/app/core/services/logger.service';
+import { Property } from 'src/app/core/models/property';
 
 @Component({
     selector: 'app-properties-list',
@@ -37,8 +40,8 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
     viewMode: 'list' | 'map' = 'list';
     map: mapboxgl.Map | undefined;
 
-    properties: any[] = [];
-    filteredProperties: any[] = [];
+    properties: Property[] = [];
+    filteredProperties: Property[] = [];
     loading: boolean = true;
 
     first: number = 0;
@@ -55,7 +58,8 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         private propertyService: PropertyService,
         private confirmationService: ConfirmationService,
         private messageService: MessageService,
-        private router: Router
+        private router: Router,
+        private logger: LoggerService
     ) {
         (mapboxgl as any).accessToken = environment.mapboxToken;
     }
@@ -64,13 +68,13 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         this.loadProperties();
     }
 
-    get pagedProperties(): any[] {
+    get pagedProperties(): Property[] {
         return this.filteredProperties.slice(this.first, this.first + this.rows);
     }
 
-    onPageChange(event: any) {
-        this.first = event.first;
-        this.rows = event.rows;
+    onPageChange(event: { first?: number, rows?: number }) {
+        this.first = event.first || 0;
+        this.rows = event.rows || 12;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -83,7 +87,7 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
                 this.loading = false;
             },
             error: (err) => {
-                console.error(err);
+                this.logger.error('Erro ao carregar propriedades', err);
                 this.loading = false;
                 this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Falha ao carregar propriedades' });
             }
@@ -129,7 +133,8 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         }
     }
 
-    openLeadDetails(leadId: number) {
+    openLeadDetails(leadId: number | undefined) {
+        if (!leadId) return;
         this.router.navigate(['/leads', leadId], { fragment: 'properties' });
     }
 
@@ -137,11 +142,12 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         if (this.createModal) this.createModal.open();
     }
 
-    editProperty(prop: any) {
+    editProperty(prop: Property) {
         if (this.createModal) this.createModal.open(prop);
     }
 
-    deleteProperty(event: Event, id: number) {
+    deleteProperty(event: Event, id: number | undefined) {
+        if (!id) return;
         this.confirmationService.confirm({
             target: event.target as EventTarget,
             message: 'Tem certeza que deseja excluir esta propriedade?',
@@ -192,9 +198,19 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
     addMarkersToMap() {
         if (!this.map) return;
         this.filteredProperties.forEach(prop => {
-            if (prop.geometry) this.addPolygonToMap(prop);
-            const lat = prop.lat || -18.5;
-            const lng = prop.lng || -47.5;
+            if (prop.geometry && prop.geometry.type !== 'Point') this.addPolygonToMap(prop);
+            
+            let lat = -18.5, lng = -47.5;
+            if (prop.geometry) {
+                if (prop.geometry.type === 'Point') {
+                    lng = prop.geometry.coordinates[0];
+                    lat = prop.geometry.coordinates[1];
+                } else {
+                    const centroid = turf.centroid(prop.geometry as any);
+                    lng = centroid.geometry.coordinates[0];
+                    lat = centroid.geometry.coordinates[1];
+                }
+            }
             const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
         <div style="font-family: sans-serif; color: #333;">
           <strong style="font-size: 14px;">${prop.name}</strong><br>
@@ -207,10 +223,10 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         });
     }
 
-    addPolygonToMap(prop: any) {
+    addPolygonToMap(prop: Property) {
         const sourceId = `source-${prop.id}`;
         if (this.map?.getSource(sourceId)) return;
-        this.map?.addSource(sourceId, { type: 'geojson', data: prop.geometry });
+        this.map?.addSource(sourceId, { type: 'geojson', data: prop.geometry as any });
         this.map?.addLayer({
             id: `layer-${prop.id}`,
             type: 'fill',
@@ -234,7 +250,7 @@ export class PropertiesListComponent implements OnInit, OnDestroy {
         }
     }
 
-    getCultureSeverity(culture: string): any {
+    getCultureSeverity(culture: string): "success" | "info" | "warning" | "danger" | undefined {
         switch (culture) {
             case 'Soja': return 'success';
             case 'Milho': return 'warning';

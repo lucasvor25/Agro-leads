@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
+import { LoggerModule } from 'nestjs-pino';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { LeadsModule } from './leads/leads.module';
 import { Lead } from './leads/entities/lead.entity';
 import { PropertiesModule } from './properties/properties.module';
@@ -8,9 +11,21 @@ import { Property } from './properties/entities/property.entity';
 import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
+import { LogsController } from './logs.controller';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([{
+      ttl: 900000, // 15 minutos
+      limit: 100,
+    }]),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        transport: process.env.NODE_ENV !== 'production'
+          ? { target: 'pino-pretty', options: { singleLine: true } }
+          : undefined,
+      },
+    }),
     ConfigModule.forRoot(),
     TypeOrmModule.forRootAsync({
       useFactory: () => ({
@@ -22,7 +37,7 @@ import { AuthModule } from './auth/auth.module';
         database: process.env.DB_NAME,
         entities: [Lead, Property, User],
         migrations: ['dist/db/migrations/*.js'],
-        synchronize: true,   // cria tabelas automaticamente em dev
+        synchronize: true,
         migrationsRun: false,
         ssl: false,
       }),
@@ -32,7 +47,12 @@ import { AuthModule } from './auth/auth.module';
     UsersModule,
     AuthModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [LogsController],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule { }

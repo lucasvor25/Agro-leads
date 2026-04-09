@@ -1,4 +1,5 @@
 import { Transform } from 'class-transformer';
+import { sanitizeString } from '../../common/utils/sanitize.util';
 import {
     IsString,
     IsEmail,
@@ -14,7 +15,7 @@ export class CreateLeadDto {
 
     @IsString({ message: 'O nome deve ser um texto' })
     @IsNotEmpty({ message: 'O nome é obrigatório' })
-    @Transform(({ value }) => value?.trim()) // Remove espaços em branco no início/fim
+    @Transform(({ value }) => sanitizeString(value?.trim()))
     name: string;
 
     @IsString()
@@ -51,6 +52,7 @@ export class CreateLeadDto {
 
     @IsString()
     @IsOptional()
+    @Transform(({ value }) => sanitizeString(value?.trim()))
     obs?: string;
 
     @IsOptional()

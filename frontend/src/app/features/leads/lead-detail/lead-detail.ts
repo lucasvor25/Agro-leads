@@ -12,6 +12,8 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { PropertyService } from 'src/app/core/services/property';
+import { LoggerService } from 'src/app/core/services/logger.service';
+import { Property } from 'src/app/core/models/property';
 
 @Component({
   selector: 'app-lead-detail',
@@ -30,11 +32,11 @@ import { PropertyService } from 'src/app/core/services/property';
 export class LeadDetailComponent implements OnInit, OnDestroy {
 
   lead: Lead | null = null;
-  properties: any[] = [];
+  properties: Property[] = [];
   loading: boolean = true;
 
   map: mapboxgl.Map | undefined;
-  selectedPropId: number | null = null;
+  selectedPropId: number | null | undefined = null;
 
   private mapInitAttempts = 0;
 
@@ -43,7 +45,8 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
     private router: Router,
     private leadService: LeadService,
     private propertyService: PropertyService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private logger: LoggerService
   ) {
     (mapboxgl as any).accessToken = environment.mapboxToken;
   }
@@ -63,7 +66,7 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
         this.loadProperties(id);
       },
       error: (err) => {
-        console.error(err);
+        this.logger.error('Erro ao carregar lead', err);
         this.loading = false;
       }
     });
@@ -94,7 +97,7 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
       if (this.mapInitAttempts < 50) {
         setTimeout(() => this.tryInitMap(), 100);
       } else {
-        console.warn('Abortando criação do mapa: Container #mini-map não encontrado após 5s.');
+        this.logger.warn('Abortando criação do mapa: Container #mini-map não encontrado após 5s.');
       }
     }
   }
@@ -133,15 +136,15 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
         hasValidBounds = true;
       }
 
-      let lat = prop.lat;
-      let lng = prop.lng;
+      let lat: number | undefined;
+      let lng: number | undefined;
 
-      if (!lat && prop.geometry) {
+      if (prop.geometry) {
         if (prop.geometry.type === 'Point') {
           lng = prop.geometry.coordinates[0];
           lat = prop.geometry.coordinates[1];
         } else {
-          const center = turf.centroid(prop.geometry);
+          const center = turf.centroid(prop.geometry as any);
           lng = center.geometry.coordinates[0];
           lat = center.geometry.coordinates[1];
         }
@@ -159,7 +162,7 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  addMarker(prop: any, lng: number, lat: number) {
+  addMarker(prop: Property, lng: number, lat: number) {
     if (!this.map) return;
 
     const el = document.createElement('div');
@@ -187,13 +190,13 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
       .addTo(this.map);
   }
 
-  addPolygon(prop: any) {
+  addPolygon(prop: Property) {
     if (!this.map) return;
 
     const id = `poly-${prop.id}`;
     if (this.map.getSource(id)) return;
 
-    this.map.addSource(id, { type: 'geojson', data: prop.geometry });
+    this.map.addSource(id, { type: 'geojson', data: prop.geometry as any });
 
     this.map.addLayer({
       id: id, type: 'fill', source: id,
@@ -209,7 +212,7 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  focusOnMap(prop: any) {
+  focusOnMap(prop: Property) {
     this.selectedPropId = prop.id;
 
     if (!this.map) return;
@@ -224,8 +227,6 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
         const bbox = turf.bbox(prop.geometry);
         this.map.fitBounds(bbox as any, { padding: 50 });
       }
-    } else if (prop.lat && prop.lng) {
-      this.map.flyTo({ center: [prop.lng, prop.lat], zoom: 15 });
     }
   }
 
@@ -251,7 +252,7 @@ export class LeadDetailComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() { this.map?.remove(); }
 
-  getStatusSeverity(status: string): any {
+  getStatusSeverity(status: string): "success" | "info" | "warning" | "danger" | undefined {
     switch (status) {
       case 'Novo': return 'info';
       case 'Contato Inicial': return 'info';

@@ -13,6 +13,8 @@ import { InputMaskModule } from 'primeng/inputmask';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { AutoCompleteModule } from 'primeng/autocomplete';
+import { LoggerService } from 'src/app/core/services/logger.service';
+import { CityOption } from 'src/app/core/models/common';
 
 @Component({
   selector: 'app-lead-create',
@@ -48,8 +50,8 @@ export class LeadCreateComponent implements OnInit {
   cpfInvalid: boolean = false;
   emailInvalid: boolean = false;
 
-  mgCities: any[] = [];
-  filteredCities: any[] = [];
+  mgCities: CityOption[] = [];
+  filteredCities: CityOption[] = [];
 
   newLead: any = {
     name: '',
@@ -73,7 +75,8 @@ export class LeadCreateComponent implements OnInit {
 
   constructor(
     private leadService: LeadService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private logger: LoggerService
   ) { }
 
   ngOnInit() {
@@ -82,7 +85,12 @@ export class LeadCreateComponent implements OnInit {
     });
   }
 
-  filterCity(event: any) {
+  cityToString(city: CityOption | string | null | undefined): string {
+    if (!city) return '';
+    return typeof city === 'string' ? city : city.label;
+  }
+
+  filterCity(event: { query: string }) {
     const query = event.query?.toLowerCase() || '';
     if (!query) {
       this.filteredCities = [...this.mgCities];
@@ -184,7 +192,7 @@ export class LeadCreateComponent implements OnInit {
 
   private handleError(error: any) {
     this.loading = false;
-    console.error('Erro na requisição:', error);
+    this.logger.error('Erro na requisição:', error);
 
     if (error.status === 409) {
       const msg = error.error?.message || 'Registro duplicado.';

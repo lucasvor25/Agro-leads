@@ -1,4 +1,5 @@
 import { Transform } from 'class-transformer';
+import { sanitizeString } from '../../common/utils/sanitize.util';
 import {
     IsNotEmpty,
     IsNumber,
@@ -14,17 +15,17 @@ export class CreatePropertyDto {
 
     @IsString()
     @IsNotEmpty({ message: 'O nome da propriedade é obrigatório' })
-    @Transform(({ value }) => value?.trim())
+    @Transform(({ value }) => sanitizeString(value?.trim()))
     name: string;
 
     @IsString()
     @IsNotEmpty({ message: 'O município é obrigatório' })
-    @Transform(({ value }) => value?.trim())
+    @Transform(({ value }) => sanitizeString(value?.trim()))
     city: string;
 
     @IsString()
     @IsNotEmpty({ message: 'A cultura é obrigatória' })
-    @Transform(({ value }) => value?.trim())
+    @Transform(({ value }) => sanitizeString(value?.trim()))
     culture: string;
 
     @IsNumber({}, { message: 'A área deve ser um número válido' })
@@ -37,7 +38,7 @@ export class CreatePropertyDto {
 
     @IsString()
     @IsOptional()
-    @Transform(({ value }) => value?.trim())
+    @Transform(({ value }) => sanitizeString(value?.trim()))
     obs?: string;
 
     @IsOptional()

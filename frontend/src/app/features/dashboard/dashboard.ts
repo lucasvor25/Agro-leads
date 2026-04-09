@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 import { ChartModule } from 'primeng/chart';
 import { SkeletonModule } from 'primeng/skeleton';
@@ -14,7 +16,11 @@ import { ButtonModule } from 'primeng/button';
 import { LeadService } from '../../core/services/lead';
 import { environment } from 'src/environments/environment';
 import * as mapboxgl from 'mapbox-gl';
+import * as turf from '@turf/turf';
 import { PropertyService } from 'src/app/core/services/property';
+import { LoggerService } from 'src/app/core/services/logger.service';
+import { Lead } from 'src/app/core/models/lead';
+import { Property } from 'src/app/core/models/property';
 
 @Component({
   selector: 'app-dashboard',
@@ -29,8 +35,8 @@ import { PropertyService } from 'src/app/core/services/property';
 })
 export class DashboardComponent implements OnInit, OnDestroy {
 
-  leads: any[] = [];
-  properties: any[] = [];
+  leads: Lead[] = [];
+  properties: Property[] = [];
   loading: boolean = true;
 
   totalLeads: number = 0;
@@ -42,7 +48,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   cityChartData: any;
   cityChartOptions: any;
 
-  priorityLeadsList: any[] = [];
+  priorityLeadsList: Lead[] = [];
   statusSummary: any = {};
 
   map: mapboxgl.Map | undefined;
@@ -51,7 +57,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private leadService: LeadService,
     private propertyService: PropertyService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private logger: LoggerService
   ) {
     (mapboxgl as any).accessToken = environment.mapboxToken;
   }
@@ -63,26 +70,37 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   loadData() {
     this.loading = true;
-    this.leadService.getLeads().subscribe(leads => {
-      this.leads = leads;
 
-      this.propertyService.getProperties().subscribe(props => {
-        this.properties = props;
+    forkJoin({
+      leadsResponse: this.leadService.getLeads({ limit: 2000 }).pipe(
+        catchError(err => {
+          this.logger.error('Erro ao carregar leads:', err);
+          return of({ data: [], meta: { totalItems: 0, itemCount: 0, itemsPerPage: 0, totalPages: 0, currentPage: 0 } });
+        })
+      ),
+      properties: this.propertyService.getProperties().pipe(
+        catchError(err => {
+          this.logger.error('Erro ao carregar propriedades:', err);
+          return of([]);
+        })
+      )
+    }).subscribe(({ leadsResponse, properties }) => {
+      this.leads = leadsResponse.data || [];
+      this.properties = properties || [];
 
-        this.calculateKPIs();
+      this.calculateKPIs();
 
-        if (this.leads.length > 0) {
-          this.setupCharts();
-          this.filterLists();
-        }
+      if (this.leads.length > 0) {
+        this.setupCharts();
+        this.filterLists();
+      }
 
-        this.loading = false;
-        this.cdr.detectChanges();
+      this.loading = false;
+      this.cdr.detectChanges();
 
-        if (this.properties.length > 0) {
-          this.initMap();
-        }
-      });
+      if (this.properties.length > 0) {
+        this.initMap();
+      }
     });
   }
 
@@ -136,14 +154,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
       }]
     };
 
-    const cityMap: any = {};
+    const cityMap: Record<string, number> = {};
     this.leads.forEach(l => {
       const city = l.city || 'Não informado';
       cityMap[city] = (cityMap[city] || 0) + 1;
     });
 
     const sortedCities = Object.entries(cityMap)
-      .sort((a: any, b: any) => b[1] - a[1])
+      .sort((a, b) => b[1] - a[1])
       .slice(0, 5);
 
     this.cityChartData = {
@@ -216,9 +234,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
         });
       }
 
-      // --- PARTE 2: ADICIONAR PIN (JÁ ESTÁ AQUI) ---
-      const lat = prop.lat || (prop.geometry?.type === 'Point' ? prop.geometry.coordinates[1] : null);
-      const lng = prop.lng || (prop.geometry?.type === 'Point' ? prop.geometry.coordinates[0] : null);
+      let lat, lng;
+      if (prop.geometry?.type === 'Point') {
+        lat = prop.geometry.coordinates[1];
+        lng = prop.geometry.coordinates[0];
+      } else if (prop.geometry?.type === 'Polygon') {
+        const centroid = turf.centroid(prop.geometry as any);
+        lat = centroid.geometry.coordinates[1];
+        lng = centroid.geometry.coordinates[0];
+      }
 
       if (lat && lng) {
         const el = document.createElement('div');

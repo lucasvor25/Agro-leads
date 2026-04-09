@@ -13,13 +13,17 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { MessageService } from 'primeng/api';
 import { ToastModule } from 'primeng/toast';
 import { SelectButtonModule } from 'primeng/selectbutton';
+import MapboxDraw from '@mapbox/mapbox-gl-draw';
 
 import * as mapboxgl from 'mapbox-gl';
-import MapboxDraw from '@mapbox/mapbox-gl-draw';
 import * as turf from '@turf/turf';
 import { environment } from 'src/environments/environment';
 import { LeadService } from '../../../core/services/lead';
 import { PropertyService } from 'src/app/core/services/property';
+import { LoggerService } from 'src/app/core/services/logger.service';
+import { Lead } from 'src/app/core/models/lead';
+import { Property } from 'src/app/core/models/property';
+import { CityOption, DropdownOption } from 'src/app/core/models/common';
 
 @Component({
   selector: 'app-property-create',
@@ -56,24 +60,23 @@ export class PropertyCreateComponent implements OnInit {
   isEditMode: boolean = false;
   currentPropertyId: number | null = null;
 
-  newProperty: any = {
-    lead: null, name: '', city: null, culture: '', obs: '',
-    area: null, geometry: null, lat: null, lng: null
+  newProperty: Partial<Property> & { city?: any } = {
+    name: '', city: undefined, culture: '', obs: '', area: undefined, geometry: null
   };
 
   tempPolygonGeometry: any = null;
-  tempPolygonArea: number | null = null;
+  tempPolygonArea: number | null | undefined = null;
   tempPinGeometry: any = null;
-  tempPinArea: number | null = null;
-  tempPinLat: number | null = null;
-  tempPinLng: number | null = null;
+  tempPinArea: number | null | undefined = null;
+  tempPinLat: number | null | undefined = null;
+  tempPinLng: number | null | undefined = null;
 
-  leadsList: any[] = [];
-  filteredLeads: any[] = [];
-  allCities: any[] = [];
-  filteredCities: any[] = [];
+  leadsList: Lead[] = [];
+  filteredLeads: Lead[] = [];
+  allCities: CityOption[] = [];
+  filteredCities: CityOption[] = [];
 
-  cultureOptions = [
+  cultureOptions: DropdownOption[] = [
     { label: 'Soja', value: 'Soja' },
     { label: 'Milho', value: 'Milho' },
     { label: 'Algodão', value: 'Algodão' }
@@ -96,17 +99,18 @@ export class PropertyCreateComponent implements OnInit {
     private leadService: LeadService,
     private propertyService: PropertyService,
     private messageService: MessageService,
-    private http: HttpClient
+    private http: HttpClient,
+    private logger: LoggerService
   ) {
     (mapboxgl as any).accessToken = environment.mapboxToken;
   }
 
   ngOnInit() {
     this.leadService.getCitiesMG().subscribe(c => this.allCities = c);
-    this.leadService.getLeads().subscribe(l => this.leadsList = l);
+    this.leadService.getLeads({ limit: 2000 }).subscribe(res => this.leadsList = res.data);
   }
 
-  open(propertyToEdit: any = null) {
+  open(propertyToEdit: Property | null = null) {
     this.resetForm(propertyToEdit);
     this.visible = true;
     this.step = 1;
@@ -205,9 +209,10 @@ export class PropertyCreateComponent implements OnInit {
         centerLng = geo.coordinates[0];
         centerLat = geo.coordinates[1];
       } else {
-        // Se for Polígono, usa as colunas lat/lng salvas (preferencial) ou calcula centróide
-        centerLng = this.newProperty.lng || turf.centroid(geo).geometry.coordinates[0];
-        centerLat = this.newProperty.lat || turf.centroid(geo).geometry.coordinates[1];
+        // Se for Polígono, tenta ler os bounds, se existir um Point base usaríamos ele
+        const pointGeom = this.newProperty.geometry?.type === 'Point' ? this.newProperty.geometry : null;
+        centerLng = pointGeom ? pointGeom.coordinates[0] : turf.centroid(geo).geometry.coordinates[0];
+        centerLat = pointGeom ? pointGeom.coordinates[1] : turf.centroid(geo).geometry.coordinates[1];
       }
 
       // Preenche os backups para troca de aba
@@ -216,7 +221,7 @@ export class PropertyCreateComponent implements OnInit {
       this.tempPinLat = centerLat;
       this.tempPinLng = centerLng;
 
-      this.manualAreaInput = this.newProperty.area;
+      this.manualAreaInput = this.newProperty.area || null;
 
       this.addPin({ lng: centerLng, lat: centerLat } as any, false);
 
@@ -244,11 +249,11 @@ export class PropertyCreateComponent implements OnInit {
         this.tempPolygonArea = this.newProperty.area;
       }
     } else if (this.selectedMapMode === 'pin') {
-      if (this.newProperty.geometry && this.newProperty.geometry.type === 'Point' && this.newProperty.lat) {
+      if (this.newProperty.geometry && this.newProperty.geometry.type === 'Point') {
         this.tempPinGeometry = this.newProperty.geometry;
         this.tempPinArea = this.manualAreaInput;
-        this.tempPinLat = this.newProperty.lat;
-        this.tempPinLng = this.newProperty.lng;
+        this.tempPinLng = this.newProperty.geometry.coordinates[0];
+        this.tempPinLat = this.newProperty.geometry.coordinates[1];
       }
     }
 
@@ -271,7 +276,7 @@ export class PropertyCreateComponent implements OnInit {
         if (this.tempPolygonGeometry) {
           this.draw.add(this.tempPolygonGeometry);
           this.newProperty.geometry = this.tempPolygonGeometry;
-          this.newProperty.area = this.tempPolygonArea;
+          this.newProperty.area = this.tempPolygonArea || undefined;
           this.isValidGeometry = true;
 
           const center = turf.centroid(this.tempPolygonGeometry);
@@ -287,10 +292,9 @@ export class PropertyCreateComponent implements OnInit {
     } else {
       this.draw.changeMode('simple_select');
       if (this.tempPinLat && this.tempPinLng) {
-        this.manualAreaInput = this.tempPinArea;
-        this.newProperty.area = this.tempPinArea;
-        this.newProperty.lat = this.tempPinLat;
-        this.newProperty.lng = this.tempPinLng;
+        this.manualAreaInput = this.tempPinArea || null;
+        this.newProperty.area = this.tempPinArea || undefined;
+        this.newProperty.geometry = { type: 'Point', coordinates: [this.tempPinLng, this.tempPinLat] } as any;
 
         this.addPin({ lng: this.tempPinLng, lat: this.tempPinLat } as any, false);
         this.checkPinValidation();
@@ -298,8 +302,6 @@ export class PropertyCreateComponent implements OnInit {
         this.manualAreaInput = null;
         this.newProperty.area = 0;
         this.newProperty.geometry = null;
-        this.newProperty.lat = null;
-        this.newProperty.lng = null;
         this.isValidGeometry = false;
 
         this.messageService.add({ severity: 'info', summary: 'Modo Pin', detail: 'Clique no local da sede e informe a área.' });
@@ -314,9 +316,7 @@ export class PropertyCreateComponent implements OnInit {
       .setLngLat(lngLat)
       .addTo(this.map);
 
-    this.newProperty.lat = lngLat.lat;
-    this.newProperty.lng = lngLat.lng;
-    this.newProperty.geometry = { type: 'Point', coordinates: [lngLat.lng, lngLat.lat] };
+    this.newProperty.geometry = { type: 'Point', coordinates: [lngLat.lng, lngLat.lat] } as any;
 
     this.checkPinValidation();
     this.updateCircleFromPin();
@@ -327,7 +327,7 @@ export class PropertyCreateComponent implements OnInit {
   }
 
   onAreaManualInput() {
-    this.newProperty.area = this.manualAreaInput;
+    this.newProperty.area = this.manualAreaInput || undefined;
     this.updateCircleFromPin();
     this.checkPinValidation();
   }
@@ -365,7 +365,7 @@ export class PropertyCreateComponent implements OnInit {
 
   checkPinValidation() {
     if (this.selectedMapMode === 'pin') {
-      this.isValidGeometry = (!!this.newProperty.lat && (this.newProperty.area > 0));
+      this.isValidGeometry = (!!this.newProperty.geometry && this.newProperty.geometry.type === 'Point' && ((this.newProperty.area || 0) > 0));
     }
   }
 
@@ -378,10 +378,6 @@ export class PropertyCreateComponent implements OnInit {
       const areaSqm = turf.area(data);
       this.newProperty.area = parseFloat((areaSqm / 10000).toFixed(2));
       this.newProperty.geometry = data.features[0].geometry;
-
-      const centroid = turf.centroid(data.features[0]);
-      this.newProperty.lng = centroid.geometry.coordinates[0];
-      this.newProperty.lat = centroid.geometry.coordinates[1];
 
       this.isValidGeometry = true;
     }
@@ -410,7 +406,7 @@ export class PropertyCreateComponent implements OnInit {
     return hasName && hasCulture && isLeadValid && isCityValid;
   }
 
-  filterLead(event: any) {
+  filterLead(event: { query: string }) {
     const query = event.query?.toLowerCase() || '';
     if (!query) {
       this.filteredLeads = [...this.leadsList];
@@ -419,7 +415,7 @@ export class PropertyCreateComponent implements OnInit {
     }
   }
 
-  filterCity(event: any) {
+  filterCity(event: { query: string }) {
     const query = event.query?.toLowerCase() || '';
     if (!query) {
       this.filteredCities = [...this.allCities];
@@ -462,14 +458,12 @@ export class PropertyCreateComponent implements OnInit {
     delete payload.updatedAt;
 
     if (payload.area) payload.area = Number(payload.area);
-    if (payload.lat) payload.lat = Number(payload.lat);
-    if (payload.lng) payload.lng = Number(payload.lng);
 
     let request$;
     if (this.isEditMode && this.currentPropertyId) {
       request$ = this.propertyService.update(this.currentPropertyId, payload);
     } else {
-      request$ = this.propertyService.create(payload);
+      request$ = this.propertyService.create(payload as any);
     }
 
     request$.subscribe({
@@ -481,7 +475,7 @@ export class PropertyCreateComponent implements OnInit {
         this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: msg });
       },
       error: (err) => {
-        console.error('Erro retornado pelo servidor:', err);
+        this.logger.error('Erro retornado pelo servidor:', err);
         this.loading = false;
         const detailMsg = err.error?.message || 'Falha ao salvar.';
         this.messageService.add({ severity: 'error', summary: 'Erro', detail: Array.isArray(detailMsg) ? detailMsg[0] : detailMsg });
@@ -489,7 +483,7 @@ export class PropertyCreateComponent implements OnInit {
     });
   }
 
-  resetForm(dataToEdit: any = null) {
+  resetForm(dataToEdit: Property | null = null) {
     if (this.map) {
       this.map.remove();
       this.map = undefined!;
@@ -510,7 +504,7 @@ export class PropertyCreateComponent implements OnInit {
 
     if (dataToEdit) {
       this.isEditMode = true;
-      this.currentPropertyId = dataToEdit.id;
+      this.currentPropertyId = dataToEdit.id as number;
       this.newProperty = { ...dataToEdit };
 
       if (typeof this.newProperty.city === 'string' && this.allCities.length > 0) {
@@ -520,13 +514,13 @@ export class PropertyCreateComponent implements OnInit {
 
       if (this.newProperty.geometry) {
         this.isValidGeometry = true;
-        this.newProperty.area = parseFloat(this.newProperty.area);
+        this.newProperty.area = parseFloat(this.newProperty.area as any);
         const isPinPolygon = this.newProperty.geometry.type === 'Polygon' &&
           this.newProperty.geometry.coordinates[0].length === 65;
 
         if (this.newProperty.geometry.type === 'Point' || isPinPolygon) {
           this.selectedMapMode = 'pin';
-          this.manualAreaInput = this.newProperty.area;
+          this.manualAreaInput = this.newProperty.area || null;
         } else {
           this.selectedMapMode = 'draw';
         }
@@ -535,8 +529,7 @@ export class PropertyCreateComponent implements OnInit {
       this.isEditMode = false;
       this.currentPropertyId = null;
       this.newProperty = {
-        lead: null, name: '', city: null, culture: '', obs: '',
-        area: null, geometry: null, lat: null, lng: null
+        name: '', city: undefined, culture: '', obs: '', area: undefined, geometry: null
       };
     }
   }

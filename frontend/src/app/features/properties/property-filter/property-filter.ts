@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
+import { Property } from 'src/app/core/models/property';
+import { DropdownOption } from 'src/app/core/models/common';
 
 export interface PropertyFilters {
   search: string;
@@ -20,7 +22,7 @@ export interface PropertyFilters {
 })
 export class PropertiesFilterComponent implements OnChanges {
 
-  @Input() properties: any[] = [];
+  @Input() properties: Property[] = [];
   @Output() onFilterChange = new EventEmitter<PropertyFilters>();
 
   filters: PropertyFilters = {
@@ -30,8 +32,8 @@ export class PropertiesFilterComponent implements OnChanges {
     sort: 'desc'
   };
 
-  cultureOptions: any[] = [];
-  cityOptions: any[] = [];
+  cultureOptions: DropdownOption[] = [];
+  cityOptions: DropdownOption[] = [];
   sortOptions = [
     { label: 'Maior Área', value: 'desc' },
     { label: 'Menor Área', value: 'asc' }

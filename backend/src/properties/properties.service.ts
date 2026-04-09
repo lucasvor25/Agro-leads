@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Property } from './entities/property.entity';
@@ -8,6 +8,8 @@ import { UpdatePropertyDto } from './dto/update-property.dto';
 
 @Injectable()
 export class PropertiesService {
+  private readonly logger = new Logger(PropertiesService.name);
+
   constructor(
     @InjectRepository(Property)
     private propertyRepository: Repository<Property>,
@@ -21,6 +23,7 @@ export class PropertiesService {
     // Garante que o lead pertence ao usuário autenticado
     const lead = await this.leadRepository.findOne({ where: { id: leadId, user_id: userId } });
     if (!lead) {
+      this.logger.warn(`Tentativa de adicionar propriedade a lead não encontrado (ID: ${leadId})`);
       throw new NotFoundException('Lead não encontrado');
     }
 
@@ -30,6 +33,7 @@ export class PropertiesService {
       user_id: userId,
     });
 
+    this.logger.log(`Criando propriedade: ${property.name} (Lead ID: ${lead.id})`);
     return this.propertyRepository.save(property);
   }
 
@@ -74,8 +78,11 @@ export class PropertiesService {
     const result = await this.propertyRepository.delete({ id, user_id: userId });
 
     if (result.affected === 0) {
+      this.logger.warn(`Tentativa de excluir propriedade inexistente (ID: ${id})`);
       throw new NotFoundException(`Propriedade com ID ${id} não encontrada para exclusão`);
     }
+
+    this.logger.log(`Propriedade excluída (ID: ${id})`);
 
     return { message: 'Propriedade excluída com sucesso' };
   }

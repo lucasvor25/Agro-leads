@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Property } from '../models/property';
+import { environment } from '../../../environments/environment';
 
 const OPTIONS = { withCredentials: true };
 
 @Injectable({ providedIn: 'root' })
 export class PropertyService {
 
-  private apiUrl = '/api/properties';
+  private apiUrl = `${environment.apiUrl}/properties`;
 
   constructor(private http: HttpClient) { }
 
@@ -20,7 +21,7 @@ export class PropertyService {
     return this.http.get<Property>(`${this.apiUrl}/${id}`, OPTIONS);
   }
 
-  create(property: Property): Observable<Property> {
+  create(property: Omit<Property, 'id'>): Observable<Property> {
     return this.http.post<Property>(this.apiUrl, property, OPTIONS);
   }
 

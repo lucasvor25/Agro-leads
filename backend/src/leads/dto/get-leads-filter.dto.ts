@@ -30,4 +30,12 @@ export class GetLeadsFilterDto {
     })
 
     priority?: boolean;
+
+    @IsOptional()
+    @Transform(({ value }) => parseInt(value, 10))
+    page?: number = 1;
+
+    @IsOptional()
+    @Transform(({ value }) => parseInt(value, 10))
+    limit?: number = 10;
 }
