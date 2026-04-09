@@ -21,7 +21,7 @@ export class LeadsService {
       user_id: userId,
     });
 
-    if (lead.area > 100) {
+    if (lead.area >= 100) {
       lead.isPriority = true;
     } else {
       lead.isPriority = false;
@@ -95,6 +95,10 @@ export class LeadsService {
 
   async update(id: number, updateLeadDto: UpdateLeadDto, userId: number) {
     const { properties, id: leadId, ...leadData } = updateLeadDto as any;
+
+    if (leadData.area !== undefined) {
+      leadData.isPriority = leadData.area >= 100;
+    }
 
     try {
       return await this.leadsRepository.update({ id, user_id: userId }, leadData);
