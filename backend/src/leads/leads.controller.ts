@@ -1,10 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { GetLeadsFilterDto } from './dto/get-leads-filter.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { Request } from 'express';
+import { GetUser } from '../common/decorators/get-user.decorator';
 
 @UseGuards(JwtAuthGuard)
 @Controller('leads')
@@ -12,27 +12,43 @@ export class LeadsController {
   constructor(private readonly leadsService: LeadsService) { }
 
   @Post()
-  create(@Body() createLeadDto: CreateLeadDto, @Req() req: Request & { user: { id: number } }) {
-    return this.leadsService.create(createLeadDto, req.user.id);
+  create(
+    @Body() createLeadDto: CreateLeadDto,
+    @GetUser('id') userId: number
+  ) {
+    return this.leadsService.create(createLeadDto, userId);
   }
 
   @Get()
-  findAll(@Query() filterDto: GetLeadsFilterDto, @Req() req: Request & { user: { id: number } }) {
-    return this.leadsService.findAll(filterDto, req.user.id);
+  findAll(
+    @Query() filterDto: GetLeadsFilterDto,
+    @GetUser('id') userId: number
+  ) {
+    return this.leadsService.findAll(filterDto, userId);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Req() req: Request & { user: { id: number } }) {
-    return this.leadsService.findOne(+id, req.user.id);
+  findOne(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser('id') userId: number
+  ) {
+    return this.leadsService.findOne(id, userId);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateLeadDto: UpdateLeadDto, @Req() req: Request & { user: { id: number } }) {
-    return this.leadsService.update(+id, updateLeadDto, req.user.id);
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateLeadDto: UpdateLeadDto,
+    @GetUser('id') userId: number
+  ) {
+    return this.leadsService.update(id, updateLeadDto, userId);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @Req() req: Request & { user: { id: number } }) {
-    return this.leadsService.remove(+id, req.user.id);
+  remove(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser('id') userId: number
+  ) {
+    return this.leadsService.remove(id, userId);
   }
 }

@@ -15,6 +15,24 @@ import { ToastModule } from 'primeng/toast';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { LoggerService } from 'src/app/core/services/logger.service';
 import { CityOption } from 'src/app/core/models/common';
+import { Lead } from 'src/app/core/models/lead';
+
+type LeadStatus = 'Novo' | 'Contato Inicial' | 'Em Negociação' | 'Convertido' | 'Perdido';
+
+interface LeadForm {
+  name: string;
+  cpf: string;
+  email: string;
+  phone: string;
+  city: CityOption | string | null;
+  area: number | null;
+  status: LeadStatus;
+  isPriority: boolean;
+  obs: string;
+  id?: number;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+}
 
 @Component({
   selector: 'app-lead-create',
@@ -53,7 +71,9 @@ export class LeadCreateComponent implements OnInit {
   mgCities: CityOption[] = [];
   filteredCities: CityOption[] = [];
 
-  newLead: any = {
+
+
+  newLead: LeadForm = {
     name: '',
     cpf: '',
     email: '',
@@ -128,7 +148,7 @@ export class LeadCreateComponent implements OnInit {
     this.emailInvalid = false;
 
     let cityClean = this.newLead.city;
-    if (this.newLead.city && this.newLead.city.value) {
+    if (this.newLead.city && typeof this.newLead.city !== 'string') {
       cityClean = this.newLead.city.value;
     }
 
@@ -156,16 +176,17 @@ export class LeadCreateComponent implements OnInit {
       return;
     }
 
-    const payload = { ...this.newLead };
-    payload.cpf = cpfClean;
-    payload.city = cityClean;
-    payload.area = Number(this.newLead.area);
-
-    delete payload.id;
-    delete payload.isPriority;
-    delete payload.createdAt;
-    delete payload.updatedAt;
-    delete payload.properties;
+    const payload: Omit<Lead, 'id'> = {
+      name: this.newLead.name,
+      cpf: cpfClean,
+      email: this.newLead.email,
+      phone: this.newLead.phone,
+      city: cityClean as string,
+      area: Number(this.newLead.area),
+      status: this.newLead.status,
+      isPriority: this.newLead.isPriority,
+      obs: this.newLead.obs
+    };
 
     this.loading = true;
 

@@ -4,12 +4,12 @@ import {
   Get,
   Body,
   Res,
-  Req,
   UseGuards,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { Response, Request } from 'express';
+import { Response } from 'express';
+import { GetUser } from '../common/decorators/get-user.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -51,7 +51,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getMe(@Req() req: Request & { user: { id: number } }) {
-    return this.authService.getMe(req.user.id);
+  async getMe(@GetUser('id') userId: number) {
+    return this.authService.getMe(userId);
   }
 }

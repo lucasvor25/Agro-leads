@@ -21,7 +21,7 @@ export class LeadsService {
       user_id: userId,
     });
 
-    if (lead.area >= 100) {
+    if (Number(lead.area) >= 100) {
       lead.isPriority = true;
     } else {
       lead.isPriority = false;

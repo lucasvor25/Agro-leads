@@ -69,22 +69,35 @@ describe('LeadsService', () => {
   });
 
   describe('create', () => {
-    it('deve criar um lead com isPriority=true quando área > 100', async () => {
+    it('deve criar um lead com isPriority=true quando área >= 100 (ex: 150)', async () => {
       const createDto = { ...mockLead, area: 150 };
       const leadInstance = { ...createDto, isPriority: false };
 
       mockLeadsRepository.create.mockReturnValue(leadInstance);
       mockLeadsRepository.save.mockResolvedValue({ ...leadInstance, isPriority: true });
 
-      const result = await service.create(createDto, 1);
+      await service.create(createDto, 1);
 
       expect(leadInstance.isPriority).toBe(true);
       expect(mockLeadsRepository.save).toHaveBeenCalled();
     });
 
-    it('deve criar um lead com isPriority=false quando área <= 100', async () => {
-      const createDto = { ...mockLead, area: 80 };
-      const leadInstance = { ...createDto, isPriority: true };
+    it('deve criar um lead com isPriority=true quando área é exatamente 100', async () => {
+      const createDto = { ...mockLead, area: 100 };
+      const leadInstance = { ...createDto, isPriority: false };
+
+      mockLeadsRepository.create.mockReturnValue(leadInstance);
+      mockLeadsRepository.save.mockResolvedValue({ ...leadInstance, isPriority: true });
+
+      await service.create(createDto, 1);
+
+      expect(leadInstance.isPriority).toBe(true);
+      expect(mockLeadsRepository.save).toHaveBeenCalled();
+    });
+
+    it('deve criar um lead com isPriority=false quando área < 100 (ex: 99)', async () => {
+      const createDto = { ...mockLead, area: 99 };
+      const leadInstance = { ...createDto, isPriority: true }; // simulando que veio true mas não deveria
 
       mockLeadsRepository.create.mockReturnValue(leadInstance);
       mockLeadsRepository.save.mockResolvedValue({ ...leadInstance, isPriority: false });

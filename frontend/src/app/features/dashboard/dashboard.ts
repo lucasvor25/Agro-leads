@@ -122,6 +122,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   filterLists() {
+
     this.priorityLeadsList = this.leads.filter(l =>
       l.isPriority && l.status !== 'Perdido' && l.status !== 'Convertido'
     ).slice(0, 3);
