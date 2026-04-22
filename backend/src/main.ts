@@ -31,9 +31,13 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   app.enableCors({
-    origin: 'http://localhost',
+    origin: [
+      'http://localhost:4200',
+      'https://agro-leads.netlify.app'
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization',
   });
 
   await app.listen(process.env.PORT ?? 3000);
