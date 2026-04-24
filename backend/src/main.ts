@@ -11,7 +11,6 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix('api');
 
-  app.use(helmet());
   app.use(cookieParser());
 
   app.useGlobalPipes(new ValidationPipe({
@@ -39,6 +38,10 @@ async function bootstrap() {
     credentials: true,
     allowedHeaders: 'Content-Type, Accept, Authorization',
   });
+
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  }));
 
   await app.listen(process.env.PORT ?? 3000);
 }
