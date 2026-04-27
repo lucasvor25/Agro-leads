@@ -12,6 +12,7 @@ import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { LogsController } from './logs.controller';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -32,15 +33,15 @@ import { LogsController } from './logs.controller';
         type: 'postgres',
         ...(process.env.DATABASE_URL
           ? {
-              url: process.env.DATABASE_URL,
-            }
+            url: process.env.DATABASE_URL,
+          }
           : {
-              host: process.env.DB_HOST,
-              port: parseInt(process.env.DB_PORT || '5433', 10),
-              username: process.env.DB_USERNAME,
-              password: process.env.DB_PASSWORD,
-              database: process.env.DB_NAME,
-            }),
+            host: process.env.DB_HOST,
+            port: parseInt(process.env.DB_PORT || '5433', 10),
+            username: process.env.DB_USERNAME,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
+          }),
         entities: [Lead, Property, User],
         migrations: ['dist/db/migrations/*.js'],
         synchronize: true,
@@ -53,7 +54,7 @@ import { LogsController } from './logs.controller';
     UsersModule,
     AuthModule,
   ],
-  controllers: [LogsController],
+  controllers: [AppController, LogsController],
   providers: [
     {
       provide: APP_GUARD,
