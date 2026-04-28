@@ -5,9 +5,36 @@
 
 <!-- Modo App: layout completo com sidebar -->
 <div class="layout-wrapper flex h-screen bg-gray-50" *ngIf="!isAuthPage">
+
+  <!-- Overlay mobile para fechar sidebar -->
+  <div
+    class="sidebar-overlay"
+    *ngIf="mobileMenuOpen"
+    (click)="closeMobileMenu()"
+  ></div>
+
+  <!-- Header mobile -->
+  <header class="mobile-header">
+    <div class="mobile-header-brand">
+      <i class="pi pi-box text-yellow-500" style="font-size:1.4rem"></i>
+      <span class="font-bold text-white ml-2" style="font-size:1.1rem">AgroCRM</span>
+    </div>
+    <div class="flex align-items-center gap-2">
+      <span class="text-xs text-gray-400" *ngIf="currentUser">{{ currentUser.name }}</span>
+      <button class="mobile-menu-btn" (click)="toggleMobileMenu()">
+        <i class="pi" [ngClass]="mobileMenuOpen ? 'pi-times' : 'pi-bars'"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Sidebar desktop + drawer mobile -->
   <aside
     class="sidebar flex-shrink-0 flex flex-column transition-all duration-300 border-right-1 border-gray-800"
-    [ngClass]="{ 'w-16rem': !collapsed, 'w-5rem': collapsed }"
+    [ngClass]="{
+      'w-16rem': !collapsed,
+      'w-5rem': collapsed,
+      'mobile-sidebar-open': mobileMenuOpen
+    }"
     style="background-color: #1a2c24; color: white"
   >
     <div
@@ -30,6 +57,7 @@
             routerLinkActive="bg-white-alpha-10 text-yellow-500 border-left-3 border-yellow-500"
             class="flex align-items-center p-3 border-round text-gray-300 hover:text-white hover:bg-white-alpha-10 cursor-pointer no-underline transition-colors"
             [ngClass]="{ 'justify-content-center': collapsed }"
+            (click)="closeMobileMenu()"
           >
             <i class="pi pi-th-large text-xl" [ngClass]="{ 'mr-2': !collapsed }"></i>
             <span *ngIf="!collapsed" class="font-medium fadein animation-duration-300"
@@ -44,6 +72,7 @@
             routerLinkActive="bg-white-alpha-10 text-yellow-500 border-left-3 border-yellow-500"
             class="flex align-items-center p-3 border-round text-gray-300 hover:text-white hover:bg-white-alpha-10 cursor-pointer no-underline transition-colors"
             [ngClass]="{ 'justify-content-center': collapsed }"
+            (click)="closeMobileMenu()"
           >
             <i class="pi pi-users text-xl" [ngClass]="{ 'mr-2': !collapsed }"></i>
             <span *ngIf="!collapsed" class="font-medium fadein animation-duration-300">Leads</span>
@@ -56,6 +85,7 @@
             routerLinkActive="bg-white-alpha-10 text-yellow-500 border-left-3 border-yellow-500"
             class="flex align-items-center p-3 border-round text-gray-300 hover:text-white hover:bg-white-alpha-10 cursor-pointer no-underline transition-colors"
             [ngClass]="{ 'justify-content-center': collapsed }"
+            (click)="closeMobileMenu()"
           >
             <i class="pi pi-map-marker text-xl" [ngClass]="{ 'mr-2': !collapsed }"></i>
             <span *ngIf="!collapsed" class="font-medium fadein animation-duration-300"
@@ -87,7 +117,7 @@
       </button>
       <button
         (click)="toggleSidebar()"
-        class="w-full bg-transparent border-1 border-gray-600 text-gray-300 hover:text-white hover:border-white p-2 border-round cursor-pointer flex align-items-center justify-content-center transition-colors"
+        class="w-full bg-transparent border-1 border-gray-600 text-gray-300 hover:text-white hover:border-white p-2 border-round cursor-pointer flex align-items-center justify-content-center transition-colors sidebar-collapse-btn"
       >
         <i class="pi" [ngClass]="collapsed ? 'pi-angle-right' : 'pi-angle-left'"></i>
       </button>
@@ -95,8 +125,40 @@
   </aside>
 
   <div class="main-content flex-1 flex flex-column h-full overflow-hidden relative">
-    <main class="flex-1 overflow-y-auto p-4 bg-gray-50">
+    <main class="flex-1 overflow-y-auto p-4 bg-gray-50 main-scroll-area">
       <router-outlet></router-outlet>
     </main>
   </div>
+
+  <!-- Bottom Navigation Bar (somente mobile) -->
+  <nav class="bottom-nav" *ngIf="!isAuthPage">
+    <a
+      routerLink="/dashboard"
+      routerLinkActive="bottom-nav-active"
+      class="bottom-nav-item"
+    >
+      <i class="pi pi-th-large"></i>
+      <span>Dashboard</span>
+    </a>
+    <a
+      routerLink="/leads"
+      routerLinkActive="bottom-nav-active"
+      class="bottom-nav-item"
+    >
+      <i class="pi pi-users"></i>
+      <span>Leads</span>
+    </a>
+    <a
+      routerLink="/propriedades"
+      routerLinkActive="bottom-nav-active"
+      class="bottom-nav-item"
+    >
+      <i class="pi pi-map-marker"></i>
+      <span>Fazendas</span>
+    </a>
+    <button class="bottom-nav-item bottom-nav-logout" (click)="logout()">
+      <i class="pi pi-sign-out"></i>
+      <span>Sair</span>
+    </button>
+  </nav>
 </div>

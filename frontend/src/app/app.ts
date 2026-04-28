@@ -25,6 +25,7 @@ export class App implements OnInit {
   collapsed = true;
   isAuthPage = false;
   currentUser: UserProfile | null = null;
+  mobileMenuOpen = false;
 
   constructor(private router: Router, private auth: AuthService) { }
 
@@ -57,6 +58,14 @@ export class App implements OnInit {
 
   toggleSidebar() {
     this.collapsed = !this.collapsed;
+  }
+
+  toggleMobileMenu() {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  closeMobileMenu() {
+    this.mobileMenuOpen = false;
   }
 
   logout() {

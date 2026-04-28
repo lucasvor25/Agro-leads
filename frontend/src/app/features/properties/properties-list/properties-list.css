@@ -108,3 +108,40 @@ h1 {
   color: #6b7280;
   font-size: 0.95rem;
 }
+
+/* ================================================
+   Mobile Responsiveness
+   ================================================ */
+@media (max-width: 768px) {
+
+  /* Padding global menor */
+  :host > div.p-4 {
+    padding: 0.85rem !important;
+  }
+
+  h1 {
+    font-size: 1.25rem;
+  }
+
+  /* Botão nova propriedade full width */
+  :host ::ng-deep .p-button-success {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Remover transform no hover (evita scroll indesejado) */
+  .surface-card:hover {
+    transform: none;
+  }
+
+  /* Paginador compacto */
+  :host ::ng-deep .p-paginator {
+    padding: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  /* Empty state menor */
+  .empty-state-container {
+    padding: 3rem 1rem;
+  }
+}

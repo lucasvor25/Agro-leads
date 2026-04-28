@@ -118,3 +118,55 @@
   text-align: center;
   border: 1px dashed #e5e7eb;
 }
+
+/* ================================================
+   Mobile Responsiveness
+   ================================================ */
+@media (max-width: 768px) {
+
+  /* Padding geral menor */
+  .leads-page {
+    padding: 0.85rem !important;
+  }
+
+  /* Cabeçalho: título e botão empilhados */
+  .leads-page > .mb-5 {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.75rem;
+  }
+
+  /* Botão criar lead ocupa largura total */
+  .leads-page > .mb-5 button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Grid de cards: 1 coluna no mobile */
+  :host ::ng-deep .grid.mt-5 {
+    margin-top: 1rem !important;
+  }
+
+  /* Cards sem hover translate (evita scroll indesejado) */
+  .lead-card:hover {
+    transform: none;
+  }
+
+  /* Paginador mais compacto */
+  :host ::ng-deep .p-paginator .p-paginator-element {
+    min-width: 2rem;
+    height: 2rem;
+    font-size: 0.8rem;
+    margin: 0 0.1rem;
+  }
+
+  :host ::ng-deep .p-paginator {
+    padding: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  /* Fonte menor no card */
+  .lead-name {
+    font-size: 1rem;
+  }
+}

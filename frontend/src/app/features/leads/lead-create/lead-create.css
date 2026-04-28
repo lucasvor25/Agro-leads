@@ -119,3 +119,49 @@ label {
   padding: 0.75rem 1rem;
   border-color: #ced4da;
 }
+
+/* ================================================
+   Mobile Responsiveness
+   ================================================ */
+@media (max-width: 768px) {
+
+  /* Diálogo ocupa quase toda a tela no mobile */
+  :host ::ng-deep .p-dialog {
+    width: 95vw !important;
+    max-height: 90vh;
+  }
+
+  :host ::ng-deep .p-dialog-content {
+    padding: 1.25rem 1rem 0.75rem 1rem;
+    overflow-y: auto;
+    max-height: 65vh;
+  }
+
+  :host ::ng-deep .p-dialog .p-dialog-header {
+    padding: 1rem;
+  }
+
+  :host ::ng-deep .p-dialog .p-dialog-footer {
+    padding: 0.75rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  :host ::ng-deep .p-dialog .p-dialog-footer button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Inputs com font-size >= 16px evita zoom automático no iOS */
+  :host ::ng-deep .p-inputtext,
+  :host ::ng-deep .p-inputnumber-input,
+  :host ::ng-deep .p-inputmask,
+  :host ::ng-deep .p-dropdown .p-dropdown-label {
+    font-size: 16px !important;
+  }
+
+  label {
+    font-size: 0.9rem;
+  }
+}

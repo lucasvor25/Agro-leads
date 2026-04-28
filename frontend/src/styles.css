@@ -5,8 +5,28 @@
 @import 'mapbox-gl/dist/mapbox-gl.css';
 /* @import '@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css'; */
 
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: 'Inter', sans-serif;
   background-color: #f8fafc;
+  /* Evita bounce/overscroll indesejado em iOS */
+  overscroll-behavior: none;
+}
+
+/* Garante que imagens e elementos de bloco não transbordem */
+img, video, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Toast sempre acima da bottom nav no mobile */
+@media (max-width: 768px) {
+  .p-toast {
+    bottom: 76px !important;
+    top: auto !important;
+  }
 }

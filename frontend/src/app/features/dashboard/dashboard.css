@@ -194,18 +194,60 @@ p-chart {
 
 @media (max-width: 768px) {
   .text-4xl {
-    font-size: 2rem !important;
+    font-size: 1.75rem !important;
   }
 
   .surface-card {
-    padding: 1.25rem !important;
+    padding: 1rem !important;
   }
 
   .surface-card.cursor-pointer {
-    padding: 1.25rem !important;
+    padding: 1rem !important;
   }
 
   .grid.text-center .col {
-    padding: 1rem;
+    padding: 0.75rem;
+  }
+
+  /* Dashboard header em coluna no mobile */
+  .p-4.fadein > div:first-child {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* Padding geral menor no mobile */
+  .p-4.fadein {
+    padding: 0.85rem !important;
+  }
+
+  /* Gráficos menores */
+  p-chart canvas {
+    max-height: 200px !important;
+  }
+
+  /* Mapa menor */
+  .relative.w-full.h-20rem,
+  [style*="h-20rem"] {
+    height: 14rem !important;
+  }
+
+  /* Cards de leads prioritários em scroll horizontal */
+  .mb-5 > .grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.75rem;
+    padding-bottom: 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .mb-5 > .grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mb-5 > .grid > .col-12 {
+    min-width: 72vw;
+    flex: 0 0 auto;
   }
 }
