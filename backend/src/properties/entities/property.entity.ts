@@ -2,6 +2,13 @@ import { Lead } from 'src/leads/entities/lead.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
+/** Subconjunto dos tipos GeoJSON aceitos pelo PostGIS */
+type GeoJsonGeometry =
+  | { type: 'Point'; coordinates: [number, number] }
+  | { type: 'LineString'; coordinates: [number, number][] }
+  | { type: 'Polygon'; coordinates: [number, number][][] }
+  | { type: 'MultiPolygon'; coordinates: [number, number][][][]} ;
+
 @Entity('properties')
 export class Property {
     @PrimaryGeneratedColumn()
@@ -20,7 +27,7 @@ export class Property {
     area: number;
 
     @Column({ type: 'geometry', spatialFeatureType: 'Geometry', srid: 4326, nullable: true })
-    geometry: any;
+    geometry: GeoJsonGeometry | null;
 
     @Column({ type: 'text', nullable: true })
     obs?: string;
@@ -33,8 +40,6 @@ export class Property {
 
     @UpdateDateColumn()
     updatedAt: Date;
-
-
 
     @ManyToOne(() => User, { nullable: true, onDelete: 'SET NULL' })
     @JoinColumn({ name: 'user_id' })

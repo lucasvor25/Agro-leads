@@ -1,10 +1,11 @@
-import { Injectable, ConflictException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, ConflictException, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Brackets } from 'typeorm';
 import { Lead } from './entities/lead.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { GetLeadsFilterDto } from './dto/get-leads-filter.dto';
+import { PaginatedResult } from '../common/interfaces/paginated-result.interface';
 
 @Injectable()
 export class LeadsService {
@@ -15,17 +16,13 @@ export class LeadsService {
     private leadsRepository: Repository<Lead>,
   ) { }
 
-  async create(createLeadDto: CreateLeadDto, userId: number) {
+  async create(createLeadDto: CreateLeadDto, userId: number): Promise<Lead> {
     const lead = this.leadsRepository.create({
       ...createLeadDto,
       user_id: userId,
     });
 
-    if (Number(lead.area) >= 100) {
-      lead.isPriority = true;
-    } else {
-      lead.isPriority = false;
-    }
+    lead.isPriority = Number(lead.area) >= 100;
 
     try {
       this.logger.log(`Criando lead: ${lead.name}`);
@@ -35,7 +32,7 @@ export class LeadsService {
     }
   }
 
-  async findAll(filterDto: GetLeadsFilterDto, userId: number): Promise<any> {
+  async findAll(filterDto: GetLeadsFilterDto, userId: number): Promise<PaginatedResult<Lead>> {
     const { search, status, city, priority, page = 1, limit = 10 } = filterDto;
     const query = this.leadsRepository.createQueryBuilder('lead');
 
@@ -86,22 +83,31 @@ export class LeadsService {
     };
   }
 
-  findOne(id: number, userId: number) {
-    return this.leadsRepository.findOne({
+  async findOne(id: number, userId: number): Promise<Lead> {
+    const lead = await this.leadsRepository.findOne({
       where: { id, user_id: userId },
       relations: ['properties'],
     });
+
+    if (!lead) {
+      throw new NotFoundException(`Lead com ID ${id} não encontrado.`);
+    }
+
+    return lead;
   }
 
   async update(id: number, updateLeadDto: UpdateLeadDto, userId: number) {
-    const { properties, id: leadId, ...leadData } = updateLeadDto as any;
+    const { area, ...rest } = updateLeadDto;
 
-    if (leadData.area !== undefined) {
-      leadData.isPriority = leadData.area >= 100;
+    const updateData: Partial<Lead> = { ...rest };
+
+    if (area !== undefined) {
+      updateData.area = area;
+      updateData.isPriority = area >= 100;
     }
 
     try {
-      return await this.leadsRepository.update({ id, user_id: userId }, leadData);
+      return await this.leadsRepository.update({ id, user_id: userId }, updateData);
     } catch (error) {
       this.handleDBExceptions(error);
     }
@@ -111,7 +117,7 @@ export class LeadsService {
     return this.leadsRepository.delete({ id, user_id: userId });
   }
 
-  private handleDBExceptions(error: any) {
+  private handleDBExceptions(error: any): never {
     if (error.code === '23505') {
       if (error.detail && error.detail.includes('cpf')) {
         throw new ConflictException('Este CPF já está cadastrado no sistema.');

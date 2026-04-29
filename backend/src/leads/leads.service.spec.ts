@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { ConflictException, InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { LeadsService } from './leads.service';
 import { Lead } from './entities/lead.entity';
 
@@ -208,6 +208,12 @@ describe('LeadsService', () => {
         where: { id: 1, user_id: 1 },
         relations: ['properties'],
       });
+    });
+
+    it('deve lançar NotFoundException quando o lead não existir', async () => {
+      mockLeadsRepository.findOne.mockResolvedValue(null);
+
+      await expect(service.findOne(999, 1)).rejects.toThrow(NotFoundException);
     });
   });
 

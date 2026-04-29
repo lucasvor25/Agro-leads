@@ -59,7 +59,7 @@ describe('UsersController', () => {
   it('findOne() deve retornar um usuário pelo id', async () => {
     mockUsersService.findOne.mockResolvedValue(mockUser);
 
-    const result = await controller.findOne('1');
+    const result = await controller.findOne(1);
 
     expect(mockUsersService.findOne).toHaveBeenCalledWith(1);
     expect(result).toEqual(mockUser);
@@ -69,7 +69,7 @@ describe('UsersController', () => {
     const dto = { name: 'Novo Nome' };
     mockUsersService.update.mockResolvedValue({ ...mockUser, ...dto });
 
-    const result = await controller.update('1', dto as any);
+    const result = await controller.update(1, dto as any);
 
     expect(mockUsersService.update).toHaveBeenCalledWith(1, dto);
   });
@@ -77,7 +77,7 @@ describe('UsersController', () => {
   it('remove() deve remover o usuário pelo id', async () => {
     mockUsersService.remove.mockResolvedValue({ message: 'Usuário removido' });
 
-    const result = await controller.remove('1');
+    const result = await controller.remove(1);
 
     expect(mockUsersService.remove).toHaveBeenCalledWith(1);
     expect(result).toEqual({ message: 'Usuário removido' });
