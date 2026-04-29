@@ -11,6 +11,7 @@ import { LeadCreateComponent } from '../lead-create/lead-create';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { PaginatorModule } from 'primeng/paginator';
+import { SkeletonModule } from 'primeng/skeleton';
 
 @Component({
     selector: 'app-lead-list',
@@ -23,7 +24,8 @@ import { PaginatorModule } from 'primeng/paginator';
         LeadCreateComponent,
         ButtonModule,
         TableModule,
-        PaginatorModule
+        PaginatorModule,
+        SkeletonModule
     ],
     templateUrl: './lead-list.html',
     styleUrls: ['./lead-list.css']
@@ -34,6 +36,8 @@ export class LeadListComponent implements OnInit {
 
     leads: Lead[] = [];
     displayModal: boolean = false;
+    loading: boolean = true;
+    skeletonItems = Array(8).fill(null);
 
     first: number = 0;
     rows: number = 12;
@@ -64,11 +68,16 @@ export class LeadListComponent implements OnInit {
     }
 
     loadLeads(filters?: LeadFilters, page: number = 1, limit?: number) {
+        this.loading = true;
         const queryParams = { ...filters, page, limit: limit || this.rows };
         this.leadService.getLeads(queryParams).subscribe({
             next: (response) => {
                 this.leads = response.data;
                 this.totalRecords = response.meta.totalItems;
+                this.loading = false;
+            },
+            error: () => {
+                this.loading = false;
             }
         });
     }

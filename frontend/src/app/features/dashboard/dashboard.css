@@ -3,6 +3,23 @@
   border-radius: 20px;
 }
 
+/* ========================================
+   Skeleton overrides
+   ======================================== */
+:host ::ng-deep .p-skeleton {
+  background-color: #f1f5f9;
+  border-radius: 8px;
+}
+
+:host ::ng-deep .p-skeleton::after {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+}
+
 .shadow-1 {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
 }

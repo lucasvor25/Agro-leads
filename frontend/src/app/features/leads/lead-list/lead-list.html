@@ -20,7 +20,39 @@
   ></app-lead-filter>
   <app-lead-create (onSave)="onLeadCreated()"></app-lead-create>
 
-  <div class="grid mt-5" *ngIf="leads.length > 0">
+  <!-- ===================== SKELETON LOADING ===================== -->
+  <div *ngIf="loading" class="grid mt-5 skeleton-grid">
+    <div class="col-12 md:col-6 lg:col-4 xl:col-3" *ngFor="let i of skeletonItems">
+      <div class="lead-card-skeleton">
+        <!-- Nome -->
+        <p-skeleton width="70%" height="1.1rem" styleClass="mb-2" borderRadius="6px"></p-skeleton>
+        <p-skeleton width="45%" height="0.75rem" styleClass="mb-4" borderRadius="6px"></p-skeleton>
+        <!-- Ícones + info -->
+        <div class="flex align-items-center gap-2 mb-3">
+          <p-skeleton shape="circle" size="1.85rem"></p-skeleton>
+          <p-skeleton width="55%" height="0.8rem" borderRadius="6px"></p-skeleton>
+        </div>
+        <div class="flex align-items-center gap-2 mb-3">
+          <p-skeleton shape="circle" size="1.85rem"></p-skeleton>
+          <p-skeleton width="50%" height="0.8rem" borderRadius="6px"></p-skeleton>
+        </div>
+        <div class="flex align-items-center gap-2 mb-4">
+          <p-skeleton shape="circle" size="1.85rem"></p-skeleton>
+          <p-skeleton width="65%" height="0.8rem" borderRadius="6px"></p-skeleton>
+        </div>
+        <!-- Badge status -->
+        <p-skeleton width="5rem" height="1.4rem" borderRadius="6px" styleClass="mb-3"></p-skeleton>
+        <!-- Rodapé -->
+        <div class="flex justify-content-between align-items-center mt-auto pt-3" style="border-top: 1px solid #f3f4f6">
+          <p-skeleton width="4rem" height="1.4rem" borderRadius="8px"></p-skeleton>
+          <p-skeleton width="3.5rem" height="0.75rem" borderRadius="6px"></p-skeleton>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== CONTEÚDO REAL ===================== -->
+  <div class="grid mt-5" *ngIf="!loading && leads.length > 0">
     <div class="col-12 md:col-6 lg:col-4 xl:col-3" *ngFor="let lead of leads">
       <div
         (click)="viewDetails(lead.id)"
@@ -108,7 +140,7 @@
   </div>
 
   <p-paginator
-    *ngIf="leads.length > 0"
+    *ngIf="!loading && leads.length > 0"
     [first]="first"
     [rows]="rows"
     [totalRecords]="totalRecords"
@@ -116,7 +148,7 @@
     (onPageChange)="onPageChange($event)"
   ></p-paginator>
 
-  <div *ngIf="leads.length === 0" class="empty-state mt-5">
+  <div *ngIf="!loading && leads.length === 0" class="empty-state mt-5">
     <i class="pi pi-search"></i>
     <h3>Nenhum lead encontrado</h3>
     <p>Não encontramos resultados para sua busca. Tente ajustar os filtros.</p>
