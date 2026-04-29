@@ -13,7 +13,6 @@ import { User } from './users/entities/user.entity';
 import { AuthModule } from './auth/auth.module';
 import { LogsController } from './logs.controller';
 import { AppController } from './app.controller';
-import { DbResetController } from './db-reset.controller';
 
 @Module({
   imports: [
@@ -55,7 +54,7 @@ import { DbResetController } from './db-reset.controller';
     UsersModule,
     AuthModule,
   ],
-  controllers: [AppController, LogsController, DbResetController],
+  controllers: [AppController, LogsController],
   providers: [
     {
       provide: APP_GUARD,
