@@ -297,7 +297,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   createLead() { this.router.navigate(['/leads']); }
 
   generateTestData() {
-    if (confirm('Deseja realmente gerar 1000 leads de teste? Isso pode demorar alguns segundos.')) {
+    if (confirm('Deseja realmente gerar 1000 leads e 1000 fazendas de teste? Isso pode demorar alguns segundos.')) {
       this.generatingData = true;
       this.leadService.generateTestData().subscribe({
         next: (res) => {

@@ -1,6 +1,6 @@
 import { Injectable, ConflictException, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Brackets } from 'typeorm';
+import { Repository, Brackets, DataSource } from 'typeorm';
 import { Lead } from './entities/lead.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
@@ -14,6 +14,7 @@ export class LeadsService {
   constructor(
     @InjectRepository(Lead)
     private leadsRepository: Repository<Lead>,
+    private dataSource: DataSource
   ) { }
 
   async create(createLeadDto: CreateLeadDto, userId: number): Promise<Lead> {
@@ -138,6 +139,7 @@ export class LeadsService {
     const cities = ['São Paulo', 'Ribeirão Preto', 'Uberlândia', 'Goiânia', 'Cuiabá', 'Sorriso', 'Rio Verde', 'Campo Grande', 'Dourados', 'Cascavel'];
     const states = ['SP', 'SP', 'MG', 'GO', 'MT', 'MT', 'GO', 'MS', 'MS', 'PR'];
     const statuses = ['Novo', 'Em Atendimento', 'Negociação', 'Vendido', 'Perdido'];
+    const cultures = ['Soja', 'Milho', 'Algodão', 'Café', 'Cana-de-açúcar'];
 
     for (let i = 0; i < 1000; i++) {
       const randomString = Math.random().toString(36).substring(2, 8);
@@ -150,7 +152,7 @@ export class LeadsService {
       const formattedCpf = `${mockCpf.substring(0, 3)}.${mockCpf.substring(3, 6)}.${mockCpf.substring(6, 9)}-${mockCpf.substring(9, 11)}`;
 
       leadsToInsert.push({
-        name: `Fazenda Teste ${randomString} ${i}`,
+        name: `Lead Teste ${randomString} ${i}`,
         cpf: formattedCpf,
         email: `teste${uniqueId}@exemplo.com`,
         phone: `(11) 9${Math.floor(10000000 + Math.random() * 90000000)}`,
@@ -164,12 +166,47 @@ export class LeadsService {
       });
     }
 
+    const propertiesToInsert = [];
     const batchSize = 100;
-    for (let i = 0; i < leadsToInsert.length; i += batchSize) {
-      const batch = leadsToInsert.slice(i, i + batchSize);
-      await this.leadsRepository.insert(batch);
-    }
+    
+    await this.dataSource.transaction(async manager => {
+      for (let i = 0; i < leadsToInsert.length; i += batchSize) {
+        const batch = leadsToInsert.slice(i, i + batchSize);
+        // Insert leads and retrieve the generated IDs
+        const insertResult = await manager.insert(Lead, batch);
+        
+        const generatedIdentifiers = insertResult.identifiers;
+        
+        // For each inserted lead, create a property
+        for (let j = 0; j < batch.length; j++) {
+          const leadData = batch[j];
+          const leadId = generatedIdentifiers[j].id;
+          const randomLng = -55 + (Math.random() * 10 - 5);
+          const randomLat = -15 + (Math.random() * 10 - 5);
+          
+          propertiesToInsert.push({
+            name: `Fazenda Teste ${Math.random().toString(36).substring(2, 6)}`,
+            city: leadData.city,
+            culture: cultures[Math.floor(Math.random() * cultures.length)],
+            area: leadData.area,
+            geometry: {
+              type: 'Point',
+              coordinates: [randomLng, randomLat]
+            },
+            obs: 'Propriedade de teste gerada automaticamente.',
+            leadId: leadId,
+            user_id: userId
+          });
+        }
+      }
+      
+      // Insert properties in batches
+      for (let i = 0; i < propertiesToInsert.length; i += batchSize) {
+        const batch = propertiesToInsert.slice(i, i + batchSize);
+        await manager.insert('properties', batch);
+      }
+    });
 
-    return { message: '1000 leads gerados com sucesso.' };
+    return { message: '1000 leads e 1000 fazendas gerados com sucesso.' };
   }
 }
