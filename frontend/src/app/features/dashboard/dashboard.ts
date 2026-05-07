@@ -38,6 +38,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   leads: Lead[] = [];
   properties: Property[] = [];
   loading: boolean = true;
+  generatingData: boolean = false;
 
   totalLeads: number = 0;
   priorityLeadsCount: number = 0;
@@ -294,6 +295,24 @@ export class DashboardComponent implements OnInit, OnDestroy {
   goToLead(id: number) { this.router.navigate(['/leads', id]); }
 
   createLead() { this.router.navigate(['/leads']); }
+
+  generateTestData() {
+    if (confirm('Deseja realmente gerar 1000 leads de teste? Isso pode demorar alguns segundos.')) {
+      this.generatingData = true;
+      this.leadService.generateTestData().subscribe({
+        next: (res) => {
+          alert(res.message);
+          this.generatingData = false;
+          this.loadData();
+        },
+        error: (err) => {
+          this.logger.error('Erro ao gerar leads de teste:', err);
+          alert('Erro ao gerar leads de teste. Verifique o console.');
+          this.generatingData = false;
+        }
+      });
+    }
+  }
 
   ngOnDestroy() { this.map?.remove(); }
 }

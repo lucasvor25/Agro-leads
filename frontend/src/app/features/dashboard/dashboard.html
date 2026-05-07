@@ -6,6 +6,9 @@
       <h1 class="text-3xl font-bold m-0 text-900 font-serif">Dashboard</h1>
       <span class="text-600">Visão geral da sua carteira de leads</span>
     </div>
+    <div>
+      <button pButton label="Gerar 1000 Leads de Teste" icon="pi pi-database" class="p-button-warning" (click)="generateTestData()" [disabled]="generatingData"></button>
+    </div>
   </div>
 
   <!-- ============================================================

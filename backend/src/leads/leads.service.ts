@@ -132,4 +132,44 @@ export class LeadsService {
 
     throw new InternalServerErrorException('Erro ao processar a requisição no banco de dados.');
   }
+
+  async generateTestData(userId: number): Promise<{ message: string }> {
+    const leadsToInsert = [];
+    const cities = ['São Paulo', 'Ribeirão Preto', 'Uberlândia', 'Goiânia', 'Cuiabá', 'Sorriso', 'Rio Verde', 'Campo Grande', 'Dourados', 'Cascavel'];
+    const states = ['SP', 'SP', 'MG', 'GO', 'MT', 'MT', 'GO', 'MS', 'MS', 'PR'];
+    const statuses = ['Novo', 'Em Atendimento', 'Negociação', 'Vendido', 'Perdido'];
+
+    for (let i = 0; i < 1000; i++) {
+      const randomString = Math.random().toString(36).substring(2, 8);
+      const uniqueId = Date.now() + i;
+      const areaValue = Math.floor(Math.random() * 500) + 10;
+      
+      const cityIndex = Math.floor(Math.random() * cities.length);
+      
+      const mockCpf = Math.floor(10000000000 + Math.random() * 90000000000).toString();
+      const formattedCpf = `${mockCpf.substring(0, 3)}.${mockCpf.substring(3, 6)}.${mockCpf.substring(6, 9)}-${mockCpf.substring(9, 11)}`;
+
+      leadsToInsert.push({
+        name: `Fazenda Teste ${randomString} ${i}`,
+        cpf: formattedCpf,
+        email: `teste${uniqueId}@exemplo.com`,
+        phone: `(11) 9${Math.floor(10000000 + Math.random() * 90000000)}`,
+        city: cities[cityIndex],
+        state: states[cityIndex],
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+        area: areaValue,
+        obs: 'Lead gerado automaticamente para testes de performance.',
+        isPriority: areaValue >= 100,
+        user_id: userId,
+      });
+    }
+
+    const batchSize = 100;
+    for (let i = 0; i < leadsToInsert.length; i += batchSize) {
+      const batch = leadsToInsert.slice(i, i + batchSize);
+      await this.leadsRepository.insert(batch);
+    }
+
+    return { message: '1000 leads gerados com sucesso.' };
+  }
 }

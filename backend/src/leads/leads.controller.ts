@@ -19,6 +19,11 @@ export class LeadsController {
     return this.leadsService.create(createLeadDto, userId);
   }
 
+  @Post('generate-test-data')
+  generateTestData(@GetUser('id') userId: number) {
+    return this.leadsService.generateTestData(userId);
+  }
+
   @Get()
   findAll(
     @Query() filterDto: GetLeadsFilterDto,

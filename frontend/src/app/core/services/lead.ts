@@ -54,4 +54,8 @@ export class LeadService {
         map(cities => cities.map(c => ({ label: c.nome, value: c.nome })))
       );
   }
+
+  generateTestData(): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.apiUrl}/generate-test-data`, {}, OPTIONS);
+  }
 }
