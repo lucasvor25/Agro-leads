@@ -39,6 +39,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   properties: Property[] = [];
   loading: boolean = true;
   generatingData: boolean = false;
+  mapLoading: boolean = false;
 
   totalLeads: number = 0;
   priorityLeadsCount: number = 0;
@@ -70,6 +71,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   loadData() {
+    if (this.map) {
+      this.map.remove();
+      this.map = undefined;
+    }
     this.loading = true;
 
     forkJoin({
@@ -196,6 +201,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
     const container = document.getElementById('dashboard-map');
     if (!container) return;
 
+    this.mapLoading = true;
+    this.cdr.detectChanges();
+
     this.map = new mapboxgl.Map({
       container: 'dashboard-map',
       style: 'mapbox://styles/mapbox/satellite-streets-v12',
@@ -208,6 +216,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.map.on('load', () => {
       this.map?.resize();
       this.addContentToMap();
+      this.mapLoading = false;
+      this.cdr.detectChanges();
     });
   }
 
